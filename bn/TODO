@@ -1,0 +1,5 @@
+darcs this, but first
+organize code and think how to divide it
+
+Abstract greedy search away from particular actions
+Add starting and restarting handling

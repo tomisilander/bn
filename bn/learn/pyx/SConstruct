@@ -1,0 +1,42 @@
+env = Environment()
+
+conf = Configure(env)
+if not conf.CheckLib('Judy', 'JudyHSIns'):
+    print 'Did not find Judy library with HS-functions, exiting!'
+    Exit(1) 
+env = conf.Finish()
+
+env.Append(CCFLAGS = '-O3')
+
+
+# DATA
+
+pyrexc = Builder(action = 'pyrexc $SOURCE')
+env.Append(BUILDERS = {'Pyx' : pyrexc})
+       
+pyx_data_objs = env.Pyx('data.c','data.pyx')
+cdata_objs = env.SharedObject('cdata.c')
+data_objs  = env.SharedObject(pyx_data_objs,
+                              CPPPATH = '/usr/include/python2.4/')
+data_lib = env.SharedLibrary('data', SHLIBPREFIX='',
+                             source=cdata_objs+data_objs,
+                             LIBS=[])
+
+
+# CSCORE
+
+L_objs  = env.SharedObject('L_bde_score.o', 'x_bde_score.c',
+                    	 CCFLAGS = '$CCFLAGS -DPCFG_L')
+HS_objs = env.SharedObject('HS_bde_score.o', 'x_bde_score.c',
+                    	 CCFLAGS = '$CCFLAGS -DPCFG_HS')
+pyx_cscore_objs = env.Pyx('cscore.c','cscore.pyx')
+cscore_objs  = env.SharedObject(pyx_cscore_objs,
+                                CPPPATH = '/usr/include/python2.4/')
+cscore_src   = [cscore_objs, L_objs,HS_objs, 'bde_score.c', 'pcc.c']
+
+cscore_libs = data_lib + [env['LIBLINKPREFIX']+l for l in ['m', 'Judy']]
+env.SharedLibrary('cscore',
+                  SHLIBPREFIX='',
+                  source = cscore_src,
+                  LIBS = cscore_libs,
+                  LIBLINKPREFIX = '')

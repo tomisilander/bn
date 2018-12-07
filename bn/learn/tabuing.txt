@@ -1,0 +1,39 @@
+Thinking about keeping a tabu-list to guide the search :
+
+Setting: we have a network candidate S and a set of moves we have tried
+before on S without improvement.
+
+Now there is no point trying the same moves again. However, if we try
+something else and it works producing S1, should we empty the whole
+tabu set, since now the earlier moves might prove succesfull on S1.
+
+Suppose we delete the arc A=(v1, v2). Now, scorewise, the situation
+has changed only for v2 and earlier ineffective legal moves (adding an
+arc to v2, deleting an arc to v2, reversing an arc having v2 in either
+end) may now be succesful. Also some of the earlier illegal moves may
+become legal, while eralier legal moves are still legal.
+
+Suppose we add the arc A=(v1,v2).  Now, scorewise, the situation has
+changed only for v2 and earlier ineffective legal moves (adding an arc
+to v2, deleting an arc to v2, reversing an arc having v2 in either
+end) may now be succesful, however, some of the earlier legal moves on
+v2 may now have become illegal, while earlier illegal moves are still
+illegal.
+
+Suppose we reverse the arc A=(v1,v2).  Now, scorewise, the situation has
+changed only for v1 and v2 and earlier ineffective legal moves (adding an arc
+to v2, deleting an arc to v2, reversing an arc having v2 in either
+end) may now be succesful, however, some of the earlier legal moves on
+v1 and v2 may now have become illegal and some illegal ones may now be legal.
+
+The analysis above suggests that only some tabu items are
+discarded. More specifically, after succesfull addition or deletion of
+a = (v1,v2), the additions and deletions of form (v,v2) are not tabu
+any more.  Also reversals of (v,v2) and (v2,v) might be useful now,
+since the first one implies the deletion of arc to v2 and the second
+one an addition of arc to v2.
+
+
+After succesfull arc reversal of (v1,v2) to (v2,v1)
+the additions and deletions of form (v,v2) and (v,v1) are not tabu
+any more.  Also reversals containing nodes v1 and v2 might be useful now.

@@ -1,0 +1,34 @@
+Idea about searching the neighbourhood of current solution s.
+- Only consider deletions and additions since reversals are always DA.
+- Do deletions before additions.
+
+For all arcs a than not in must:
+    introduce operation ('D',a)  
+For all missing arcs a than not in "no":
+    introduce operation ('A',a)
+
+Then go through all the sequences of operations by
+ops=('D1','D2', 'D3', 'A1',A2')
+for c in combinations(ops,3):
+...     print c
+... 
+('D1', 'D2', 'D3')
+('D1', 'D2', 'A1')
+('D1', 'D2', 'A2')
+('D1', 'D3', 'A1')
+('D1', 'D3', 'A2')
+('D1', 'A1', 'A2')
+('D2', 'D3', 'A1')
+('D2', 'D3', 'A2')
+('D2', 'A1', 'A2')
+('D3', 'A1', 'A2')
+
+If set(!) of operations is possible  it makes sense in the order.
+Notice that combinations are created in the feasible order without
+permutations.
+
+The sequences that have several operations on the same arc cannot make sense.
+certain sequences of length n may be impossible (like D1, A1) thus
+so are their continuations thus these prefixes can be stored into a tabulist. 
+
+

@@ -1,0 +1,37 @@
+digraph DEPS {
+
+	dat -> sss;
+	vd  -> sss;
+	bn  -> sss;
+
+	vd  -> tht;
+	sss -> tht;
+	ess -> tht;
+	bn  -> tht;
+
+	bn  -> mrl;
+
+	vd  -> elo;		
+	mrl -> elo;
+		
+	elo -> clq;
+	vd  -> clq;		
+	mrl -> clq;
+
+	clq -> vcx;
+	bn  -> vcx;
+
+	clq -> jtr;
+
+	clq -> pot;
+	vcx -> pot;
+	tht -> pot;
+	bn  -> pot;
+	vd  -> pot;
+
+	jtr -> ifr;
+	clq -> ifr;
+	vcx -> ifr
+	vd  -> ifr;
+	pot -> ifr;
+}	

@@ -1,0 +1,7 @@
+This test runs bucket elimination inference and joint tree inferece 
+for the same models to check that they yield same results.
+
+To run it for all datas in datas.txt with 30s learning and 20
+inference tasks for each, say: 
+
+  ./run.sh 30s 20 < datas.txt

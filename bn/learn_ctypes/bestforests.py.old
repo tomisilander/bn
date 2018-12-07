@@ -1,0 +1,156 @@
+#!/usr/bin/python
+
+from bn import BN
+from score import Score
+from sets import Set
+import operator
+
+def kruskal(bn, scr) :
+    arcscores = {}
+    for v1 in bn.vars() :
+        for v2 in xrange(v1) :
+            arc = (v1,v2)
+            bn.addarc(arc, False)
+            arcscores[arc] = scr.score_ss_var(bn, v2)
+            bn.delarc(arc, False)
+
+    ordarcs = [(s,a) for (a,s) in arcscores.items()]
+    ordarcs.sort()
+    ordarcs.reverse()
+    
+    ########################################################
+
+    (v1,v2) = ordarcs.pop(0)[1]
+    treevars = Set([v1,v2])
+    treearcs = Set()
+    treearcs.add((v1,v2))
+    six = 0
+    while len(treevars) < bn.varc :
+        for i in xrange(six, len(ordarcs)):
+            s, arc = ordarcs[i]
+            (v1,v2) = arc 
+            v_a = -1
+            if v1 in treevars:
+                if v2 in treevars:
+                    del ordarcs[i]
+                    six = i
+                    break
+                else:
+                    v_a = v2
+                    a_a = (v1, v2)
+            else:
+                if v2 in treevars:
+                    v_a = v1
+                    a_a = (v2, v1)
+                
+            if v_a >= 0:
+                treevars.add(v_a)
+                treearcs.add(a_a)
+                del ordarcs[i]
+                six = 0
+                break
+
+    for tarc in treearcs:
+        (v1, v2) = tarc
+        bn.addarc(tarc)
+        scr.score_new_v(bn,v2)
+
+def prune_1(bn, score):
+    for arc in bn.arcs():
+        (v1,v2) = arc
+        old_v2_score = score.vscores[v2]
+        score.storevar(v2)
+        bn.delarc(arc, False)
+        score.score_new_v(bn,v2)
+        new_v2_score = score.vscores[v2]
+        if(new_v2_score >= old_v2_score):
+            score.clearstore()
+            bn.pic_del(arc)
+        else:
+            bn.addarc(arc, False)
+            score.restore()
+
+
+def newclosure(bn,v,old):
+    newpcs = Set(bn.parents(v) | bn.children(v)) - old
+    old.add(v)
+    return reduce(Set.union, [newclosure(bn,nv,old) for nv in newpcs],Set())
+
+def conncomps(bn):
+    notfoundset = Set(bn.vars())
+    comps = []
+    while notfoundset:
+        comp = Set()
+        newclosure(bn,notfoundset.pop(),comp)
+        comps.append(comp)
+        notfoundset.difference_update(comp)
+    return map(list,comps)
+
+def reroot_tree(bn, r, newps = Set()) :
+    nps = Set(newps)
+    nps.add(r)
+    for rpr in bn.parents(r):
+        if rpr not in newps:
+            bn.revarc((rpr,r))
+            reroot_tree(bn, rpr, nps)
+
+    for rpr in bn.children(r):
+        reroot_tree(bn, rpr, nps)
+
+def reroot_forest(bn, comps, counter):
+    for comp, c in zip(comps, counter):
+        reroot_tree(bn, comp[c])
+
+
+class Counter:
+    def __init__(self, bases):
+        self.bases = bases
+        self.curr = None
+        self.last = reduce(operator.__mul__, bases, 1) - 1
+        self.c = -1
+        
+    def first(self) :
+        self.curr = [0]*len(self.bases)
+        self.c = 0
+        return self.curr
+    
+    def next(self, pos = 0):
+        if pos == len(self.bases):
+            return self.first() #            
+        else:
+            self.curr[pos] += 1
+            if self.curr[pos] == self.bases[pos]:
+                return self.next(pos+1)                
+            else:
+                for i in xrange(pos): self.curr[i] = 0
+                self.c += 1
+                return self.curr
+
+    def has_ticks(self):
+        return self.c < self.last 
+
+class Forestry:
+    def __init__(self, init_forest_bn):
+        self.forest = init_forest_bn.copy()
+        self.comps  = conncomps(self.forest)
+        self.counter = Counter(map(len, self.comps))
+        
+    def first(self):
+        new_forest = self.forest.copy()
+        reroot_forest(new_forest, self.comps, self.counter.first())
+        return new_forest
+    
+    def next(self):
+        new_forest = self.forest.copy()
+        reroot_forest(new_forest, self.comps, self.counter.next())
+        return new_forest
+
+    def has_forests(self):
+        return self.counter.has_ticks()
+
+if __name__ == '__main__':
+    bses = (2,3,4)
+    c = Counter(bses)
+    print c.first()
+    while c.has_ticks():
+        print c.next()

@@ -1,0 +1,96 @@
+README
+======
+
+As one can see by looking at the directory listing, Bayesian network
+inference is a messy business. There seems to be a lot of files.
+This is because building the inferer is best understood and implemented
+in many phases.
+
+Luckily, to use the system, one does not need to do too much.
+
+
+Building an inferer
+--------------------
+
+Once you have
+
+a) discrete data          (needs to have .dat extension)
+b) value description file (needs to have .vd  extension)
+c) Bayesian network       (needs to have .bn  extension)
+
+You may produce the inferer(directory) (needs to have a .ifr extension) 
+by saying:
+
+python inout.py a.dat b.vd c.bn +my.ifr
+
+The actual order of files does not matter since their role is
+determined by their extension. You may also provide -e ess for
+equivalent sample size parameter.
+
+
+Using the inferer
+-----------------
+
+Anyway, there is a command-line interface to the inferer. To start
+the inferer say:
+
+python inferer.py my.ifr
+
+and you land in a very terse interface (because the program is meant to
+be used programmatically). The interface knows five commands:
+
+- e <variable> (value_index | value_name | distribution)
+- w : watch (["-"](variable|"*")* 
+- r : reset,
+- i : infer
+- q : quit # hmm - maybe I should use Ctrl-d for this
+
+where <variable> is either variable index (0,1,2..) or variable name.
+
+Simple "i" does the inference and prints the distributions for all the
+variables in the watch-list. You may add/delete variables to/from
+watch-list by "w" command by giving it a white space separated list of
+variables or "*" denoting all. Preceding "-" removes the variables
+from the list. You enter evidence to the variable by "e" command. You
+may give "soft" evidence by providing it a (possibly non-normalized)
+distribution. Reset resets all(!) the variables to the initial
+no-evidence state.
+
+
+An example
+----------
+
+This is an example run in the examples/tst directory:
+
+python2.4 ../../inout.py tst.bn tst.vd +tst.ifr tst.dat
+python2.4 ../../inferer.py tst.ifr/
+w *           # Add everything to watch
+i             # infer
+A: 0.64 0.36
+B: 0.50 0.50
+C: 0.50 0.50
+D: 0.50 0.50
+E: 0.64 0.36
+F: 0.34 0.66
+G: 0.50 0.50
+H: 0.59 0.41
+e D 0         # Set hard evidence to the first value of variable D
+e F 2 8       # Set soft evidence to the variable F
+i             # infer
+A: 0.66 0.34
+B: 0.64 0.36
+C: 0.53 0.47
+D: 1.00 0.00
+E: 0.59 0.41
+F: 0.27 0.73  # Notice that this is not 0.2 0.8, soft evidence is weird
+G: 0.51 0.49
+H: 0.58 0.42
+w -C -D       # remove C and D from watch-list
+i
+A: 0.66 0.34
+B: 0.64 0.36
+E: 0.59 0.41
+F: 0.27 0.73
+G: 0.51 0.49
+H: 0.58 0.42
+q             # quit

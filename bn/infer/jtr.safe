@@ -1,0 +1,46 @@
+#!/usr/bin/python
+
+import heapq
+import udg
+
+def jtr(wclqs):
+    # sort sepsets (cliquepairs) largest first (smallest weight)
+
+    h = [((-len(clq1&clq2), w1+w2), (i, j))
+         for (i,(w1,clq1)) in enumerate(wclqs)
+         for (j,(w2,clq2)) in enumerate(wclqs)
+         if i<j]
+    heapq.heapify(h)
+
+    nof_clqs = len(wclqs)    
+    # one of these qlique trees will be returned
+    jtrs = [udg.Udg([i]) for i in xrange(nof_clqs)] 
+    tix  = range(nof_clqs) # for each clique the index of its tree
+
+    while True:
+
+        (i,j) = heapq.heappop(h)[1] # take a sepset
+
+        tixi, tixj = tix[i], tix[j] # and find the trees for their cliques
+        
+        if tixi != tixj: # in different tree
+            
+            ti, tj = jtrs[tixi], jtrs[tixj]
+
+            # join udg tj to udg ti
+
+            ti.addnodes(tj.nodes()) 
+            ti.addedges(tj.edges())
+            ti.addedge(i,j)
+            
+            # mark cliques of tj to be now in ti
+            
+            for j in tj.nodes():
+                tix[j] = tixi
+
+            # tj is no longer needed
+            
+            jtrs[j] = None
+            
+            if ti.nof_edges() == nof_clqs - 1:
+                return ti

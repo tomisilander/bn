@@ -1,0 +1,8 @@
+More documentation,
+- README is outdated
+- Wonder if bucketelimination underflows if lots of evidence
+  - belim not important though, there for just testing
+- gibbsampler nees a ginferer.py frontend
+
+There is lots of repetition that could be avoided by better design.
+Look for example inferer and bucketinferer

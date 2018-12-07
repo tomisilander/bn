@@ -1,0 +1,14 @@
+This is the part of the bigger project, totally in the inconlusive state.
+However, stuff in the infer directory is in a reasonable shape even
+if a lot of cleaning should be done there. Please read infer/README
+for more information about inferer.
+
+In this directory, you might want to use str2bn.py to get b-course
+stye structure files to bn-files. bn-file format is very simple: the
+first line contains the number of variables and the folloing lines
+contain two numbers denoting the from and to indices of an arc.
+
+You may also use bn_picture.py to turn bn-files to gifs, but you have
+to have graphviz-package installed for that to work.
+
+This also requires libJudy at least to compile the c-files.

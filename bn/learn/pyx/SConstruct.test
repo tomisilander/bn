@@ -1,0 +1,30 @@
+env = Environment()
+
+conf = Configure(env)
+if not conf.CheckLib('Judy', 'JudyHSIns'):
+    print 'Did not find Judy library with HS-functions, exiting!'
+    Exit(1) 
+env = conf.Finish()
+
+debug = ARGUMENTS.get('debug', 0)
+if int(debug):
+    env.Append(CCFLAGS = '-Wall -g')
+else:
+    env.Append(CCFLAGS = '-Wall -O2')
+
+L_objs  = env.Object('L_bde_score.o', 'x_bde_score.c',
+                     CCFLAGS = '$CCFLAGS -DPCFG_L')
+HS_objs = env.Object('HS_bde_score.o', 'x_bde_score.c',
+                     CCFLAGS = '$CCFLAGS -DPCFG_HS')
+
+bde_lib = env.Library('bde_scr',
+                      L_objs + HS_objs + ['cdata.c', 'pcc.c', 'bde_score.c'])
+
+env.Program(target  = 'bde_score_test',
+            source  = ['bde_score_test.c'],
+            LIBS    = ['bde_scr', 'm', 'Judy'],
+            LIBPATH = '.')
+
+
+cdm_objs = env.Object('cdm.o', 'cdata.c', CCFLAGS = '$CCFLAGS -DMAIN')
+env.Program(target  = 'cdata_test', source  = cdm_objs)

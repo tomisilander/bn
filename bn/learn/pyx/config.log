@@ -1,0 +1,7 @@
+
+file SConstruct.test,line 3:
+	Configure( confdir = .sconf_temp )
+
+Checking for JudyHSIns() in C library Judy... scons: `.sconf_temp/conftest_0.c' is up to date.
+scons: `.sconf_temp/conftest_0' is up to date.
+yes
