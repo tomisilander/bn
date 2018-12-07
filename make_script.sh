@@ -11,7 +11,7 @@ echo Script $2 will launch module $modname
 
 cat <<EOF > scripts/$2
 #!/bin/bash
-python -m $modname
+python -m $modname \$@
 EOF
 
 chmod u+x scripts/$2

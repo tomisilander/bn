@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# needs work to support delimiter flag -D
+
+if [ $# -ne 3 ]; then
+	echo Usage: $0 vdfile datfile bdtfile
+	exit
+fi
+
+tdtfile=/tmp/bn_$$.tdt
+bn_transpose_data $2 $tdtfile
+bn_tdt2bdt $1 $tdtfile $3
+rm $tdtfile
