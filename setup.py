@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-
+from glob import glob
 setup(name          = "bn",
       version       = "0.1",
       description   = "Bayesian network software",
@@ -18,5 +18,5 @@ setup(name          = "bn",
           'http://github.com/tomisilander/sigpool#egg=sigpool-0.9',      
           'http://github.com/tomisilander/disdat#egg=disdat-0.9'],
 
-      scripts=["scripts/bn_stocgreedy"],
+      scripts = glob("scripts/*")
       )
