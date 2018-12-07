@@ -56,8 +56,8 @@ def gs(xs, e, gifr, time, gibbs=True): # xs are of interest, e is evidence
  
     freevars = tuple(v for v in bnt.vars() if v not in e)
     if not gibbs:
-    tord = list(gen_totord(bnt))
-    freevars = sorted(freevars, key=lambda v:tord.index(v))
+        tord = list(gen_totord(bnt))
+        freevars = sorted(freevars, key=lambda v:tord.index(v))
 
     counts = {}  # For counting xcfgs
     # initial configuration

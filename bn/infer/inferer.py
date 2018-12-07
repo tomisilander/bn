@@ -148,10 +148,12 @@ class Sampler(Inferer):
         #    tord = list(gen_totord(bnt))
         #    freevars = sorted(freevars, key=lambda v:tord.index(v))
 
-        counts = dict((v,[0]*self.fmt.valcs(v)) for v in self.state['watch']  # For counting values
-        # initial configuration
+        # For counting values
+        counts = dict((v,[0]*self.fmt.valcs(v)) for v in self.state['watch'])
 
-        cfg = [wheel(eh[v]) if (v in eh) else randint(0,self.fmt.valcs(v)-1)  for v in self.bnt.vars()]
+        # initial configuration
+        cfg = [wheel(eh[v]) if (v in eh) else randint(0,self.fmt.valcs(v)-1)
+               for v in self.bnt.vars()]
 
         sigpool.watch('SIGUSR2')
         if self.time: sigpool.wait_n_raise(self.time, 'SIGUSR2')
