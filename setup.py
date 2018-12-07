@@ -17,4 +17,6 @@ setup(name          = "bn",
           'http://github.com/tomisilander/coliche#egg=coliche-0.1',       
           'http://github.com/tomisilander/sigpool#egg=sigpool-0.9',      
           'http://github.com/tomisilander/disdat#egg=disdat-0.9'],
+
+      scripts=["scripts/bn_stocgreedy"],
       )
