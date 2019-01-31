@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import sys
 import ifr
 import coliche
 

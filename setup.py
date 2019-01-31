@@ -18,5 +18,13 @@ setup(name          = "bn",
           'http://github.com/tomisilander/sigpool#egg=sigpool-0.9',      
           'http://github.com/tomisilander/disdat#egg=disdat-0.9'],
 
-      scripts = glob("scripts/*")
-      )
+      scripts = glob("scripts/*"),
+
+      entry_points = {
+          'console_scripts': [
+              'bn_nofnets=bn_console_scripts.bn_nofnets:main',
+              ]
+          }
+)
+
+print(find_packages())
