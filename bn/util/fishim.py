@@ -58,7 +58,7 @@ def gen_versions(x, cix, bnm):
         yield x
     else:
         nx = list(x)
-        for c in range(bnm.nof_vals[cix]):
+        for c in range(bnm.valcounts[cix]):
             nx[cix] = c
             yield list(nx)
 
@@ -69,11 +69,9 @@ def sim(x, y, pprobs, cfgextractors, bnm, cix):
         return sum(fkterms)
     else:
         xs = list(gen_versions(x, cix, bnm))
-        xprobs = (1.0,) if len(xs) == 1 else map(lognorm, (bnm.logprob_d(x)
-                                                           for x in xs))
+        xprobs = (1.0,) if len(xs) == 1 else lognorm([bnm.logprob_d(x) for x in xs])
         ys = list(gen_versions(y, cix, bnm))
-        yprobs = (1.0,) if len(ys) == 1 else map(lognorm, (bnm.logprob_d(y)
-                                                           for y in ys))
+        yprobs = (1.0,) if len(ys) == 1 else lognorm([bnm.logprob_d(y) for y in ys])
 
         # if this works you can turn this into a one big sum
         res = 0.0
