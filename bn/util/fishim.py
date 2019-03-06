@@ -64,34 +64,18 @@ def gen_versions(x,vcs):
                 nx[i]=v
             yield nx
 
-def gen_versions1(x, cix, bnm):
-    if x[cix] != -1:
-        yield x
-    else:
-        nx = list(x)
-        for c in range(bnm.valcounts[cix]):
-            nx[cix] = c
-            yield list(nx)
+def sim(x, y, pprobs, cfgextractors, bnm):
+    xs = list(gen_versions(x, bnm.valcounts))
+    xprobs = (1.0,) if len(xs) == 1 else lognorm([bnm.logprob_d(x) for x in xs])
+    ys = list(gen_versions(y, bnm.valcounts))
+    yprobs = (1.0,) if len(ys) == 1 else lognorm([bnm.logprob_d(y) for y in ys])
+
+    return sum(xp*yp*sum(vrsims(x, y, pprobs, cfgextractors, bnm))
+               for (x, xp), (y, yp) in
+               product(zip(xs, xprobs), zip(ys, yprobs)))
 
 
-def sim(x, y, pprobs, cfgextractors, bnm, cix):
-    if cix is None:
-        fkterms = list(vrsims(x, y, pprobs, cfgextractors, bnm))
-        return sum(fkterms)
-    else:
-        xs = list(gen_versions(x, bnm.valcounts))
-        xprobs = (1.0,) if len(xs) == 1 else lognorm([bnm.logprob_d(x) for x in xs])
-        ys = list(gen_versions(y, bnm.valcounts))
-        yprobs = (1.0,) if len(ys) == 1 else lognorm([bnm.logprob_d(y) for y in ys])
-
-        # if this works you can turn this into a one big sum
-        res = 0.0
-        for (x, xp), (y, yp) in product(zip(xs, xprobs), zip(ys, yprobs)):
-            res += xp*yp*sum(vrsims(x, y, pprobs, cfgextractors, bnm))
-        return res
-
-
-def main(vdfile, bnmfile, ifrdir, cix=None, matrix=False):
+def main(vdfile, bnmfile, ifrdir, matrix=False):
     valcs = bn.vd.load(vdfile)
     bnm = bn.model.bnmodel.load(bnmfile, valcs)
     ifr = bn.infer.ifr.load(ifrdir)
@@ -103,17 +87,16 @@ def main(vdfile, bnmfile, ifrdir, cix=None, matrix=False):
     if matrix:
         K = [[0.0]*N for i in range(N)]
         for((i1, d1), (i2, d2)) in combs:
-            K[i1][i2] = K[i2][i1] = sim(d1, d2, pfs, cfgxs, bnm, cix)
+            K[i1][i2] = K[i2][i1] = sim(d1, d2, pfs, cfgxs, bnm)
 
         for i in range(N):
             print(' '.join(map(str, K[i])))
     else:
         for((i1, d1), (i2, d2)) in combs:
-            print(i1, i2, sim(d1, d2, pfs, cfgxs, bnm, cix))
+            print(i1, i2, sim(d1, d2, pfs, cfgxs, bnm))
 
 
 if __name__ == '__main__':
     from coliche import che
     che(main, """vdfile; bnmfile; ifrdir
-    -c --cix cix (int) : class index counting from 0 : default None
     -m --matrix : print in matrix form""")
