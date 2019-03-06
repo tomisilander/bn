@@ -4,7 +4,7 @@ import sys
 import bn.model.bnmodel
 import bn.vd
 import bn.infer.ifr
-from itertools import combinations_with_replacement, imap, product
+from itertools import combinations_with_replacement, imap, izip, product
 from math import exp
 
 
@@ -53,7 +53,18 @@ def vrsims(x, y, pprobs, cfgextractors, bnm):
                 yield (1-pxvl)/pxvl/pp
 
 
-def gen_versions(x, cix, bnm):
+def gen_versions(x,vcs):
+    misixs = [i for (i,v) in enumerate(x) if v == -1]
+    if len(misixs)==0:
+        yield x
+    else:
+        for mcfg in product(*(range(vcs[i]) for i in misixs)):
+            nx = list(x)
+            for (i,v) in izip(misixs,mcfg):
+                nx[i]=v
+            yield nx
+
+def gen_versions1(x, cix, bnm):
     if x[cix] != -1:
         yield x
     else:
@@ -68,9 +79,9 @@ def sim(x, y, pprobs, cfgextractors, bnm, cix):
         fkterms = list(vrsims(x, y, pprobs, cfgextractors, bnm))
         return sum(fkterms)
     else:
-        xs = list(gen_versions(x, cix, bnm))
+        xs = list(gen_versions(x, bnm.valcounts))
         xprobs = (1.0,) if len(xs) == 1 else lognorm([bnm.logprob_d(x) for x in xs])
-        ys = list(gen_versions(y, cix, bnm))
+        ys = list(gen_versions(y, bnm.valcounts))
         yprobs = (1.0,) if len(ys) == 1 else lognorm([bnm.logprob_d(y) for y in ys])
 
         # if this works you can turn this into a one big sum
