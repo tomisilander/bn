@@ -1,5 +1,4 @@
-#!/usr/bin/python
-from itertools import product
+#!/usr/bin/env pythonfrom itertools import product
 
 # The system is represented as a pair (bn,urcs) where bn contains the
 # directed arcs and urcs is a set of undirected arcs represented with

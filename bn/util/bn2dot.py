@@ -1,5 +1,4 @@
-#!/usr/bin/python
-import coliche, os
+#!/usr/bin/env pythonimport coliche, os
 import bn.bn
 
 def bn2dot(bnfile, outfile, vdfile=None, loners=False, center=None,

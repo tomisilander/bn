@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 from random import random, randint
 from itertools import imap, izip, islice
 from bn.util.bn2totord  import gen_totord

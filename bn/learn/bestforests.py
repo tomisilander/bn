@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 from bn.bn import BN
 from  UnionFind import UnionFind
 import operator

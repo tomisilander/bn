@@ -1,5 +1,4 @@
-#!/usr/bin/python
-import disdat, bn.vd
+#!/usr/bin/env pythonimport disdat, bn.vd
 from itertools import izip, chain, product
 
 def main(vdfile, outvdfile, constraintfile,

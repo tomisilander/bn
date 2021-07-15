@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 from array import array
 from itertools import izip
 import coliche, disdat

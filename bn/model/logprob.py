@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-import coliche, disdat, bnmodel, bn.vd, math
+import coliche, disdat, bn.model.bnmodel, bn.vd, math
 
 def gen_logprobs(bnm, tstdat, base=None):
     if base != None:
@@ -16,9 +16,12 @@ def logprob(bnm, tstdat, base=None):
     if base: lp /= math.log(base)
     return lp
 
-def main(modelfile, vdfile, tstfile, base=None, avg=False, verbose=False):
+def main(modelfile, vdfile, tstfile, 
+         density=False, base=None, avg=False, verbose=False):
     valcs = bn.vd.load(vdfile)
-    bnm = bnmodel.load(modelfile, valcs)
+    bnm = bn.model.bnmodel.load(modelfile, valcs)
+    if density:
+        bnm.use_density = True
     tstdat = disdat.RowData(vdfile, tstfile)
     if verbose:
         for lp in gen_logprobs(bnm,tstdat,base):
@@ -30,6 +33,7 @@ def main(modelfile, vdfile, tstfile, base=None, avg=False, verbose=False):
 if __name__ == '__main__':
     coliche.che(main,
                 '''modelfile; vdfile; tstfile
+                -d --density : use ranges in vdfile to give density
                 -b --base base (float) : log base (default natural)
                 -a --avg : give average instead of sum
                 -v --verbose: list individual logprobs''')

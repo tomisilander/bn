@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 """Caching dictionary that uses access times to decide which objects to
 flush from the cache.
 

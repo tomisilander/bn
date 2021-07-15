@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 import os, signal, re
 
 # This is the pool flagging the signals

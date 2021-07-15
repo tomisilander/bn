@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 from operator import __mul__
 import bn.vd, bn.bn
 

@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 import math, operator
 from itertools import imap, product
 import disdat, bn.vd, bn.bn
@@ -18,9 +17,10 @@ def cnml(frq):
 
 class BnModel:
 
-    def __init__(self, bn):
+    def __init__(self, bn, valcs=None, use_density=False):
         self.bn = bn
-
+        self.valcs = valcs
+        self.use_density = use_density and valcs != None
 
     def save(self, varnames, fn):
 
@@ -145,7 +145,6 @@ class BnModel:
     def cache_thetas(self):
         self.thetas = map(self.thti, self.bn.vars())
 
-
     def theta(self, i, pcfg):
         return self.thti(i).get(pcfg, self.unif[i])
 
@@ -155,11 +154,15 @@ class BnModel:
         pcfg = tuple(map(d.__getitem__, pi))
         return self.theta(i, pcfg)
 
+    def logprob_di(self, i, d):
+        di = d[i]
+        p_di = self.thetd(i,d)[di]
+        rng_di = self.valcs.ranges[i][di] if self.use_density else 1
+        return math.log(p_di/rng_di)
 
-    def logprob_d(self,d):
+    def logprob_d(self, d):
         dl = list(d)
-        logthtd = lambda i: math.log(self.thetd(i,dl)[dl[i]])
-        return sum(imap(logthtd, self.bn.vars()))
+        return sum([self.logprob_di(i, dl) for i in self.bn.vars()])
 
     def logprob_D(self, dt):
         return sum(imap(self.logprob_d, dt.dats()))
@@ -177,7 +180,7 @@ class BnModel:
         
     
 def load(fn, valcs):
-    self = BnModel(bn.bn.BN(valcs.nof_vars))
+    self = BnModel(bn.bn.BN(valcs.nof_vars), valcs)
     self.valcounts = valcs.vcs
     thetas = [None] * valcs.nof_vars
     self.set_unifs()
@@ -225,7 +228,7 @@ def main(vdfile, bnfile, datfile, outfile, ess=1.0, type="bdeu"):
     valcs = bn.vd.load(vdfile)
     bns = bn.bn.load(bnfile, do_pic=False)
     dat = disdat.RowData(vdfile, datfile)
-    bnm = BnModel(bns)
+    bnm = BnModel(bns, valcs)
     bnm.init_param_learning(valcs.vcs, type.lower(), ess)
     bnm.learn_params(dat)
     bnm.save(valcs.varnames,outfile)

@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 # NOT READY YET - INFER 1 VARIABLE GIVEN THE REST (MARKOV BLANKET)
 
 import os, utils

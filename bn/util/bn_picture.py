@@ -1,5 +1,4 @@
-#!/usr/bin/python
-import coliche, os
+#!/usr/bin/env pythonimport coliche, os
 import bn2dot
 
 def bn2pic(bnfile, picfile, 

@@ -1,5 +1,4 @@
-#!/usr/bin/python
-import sys
+#!/usr/bin/env pythonimport sys
 import ifr
 import coliche
 

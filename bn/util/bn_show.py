@@ -1,5 +1,4 @@
-#!/usr/bin/python
-import coliche, os
+#!/usr/bin/env pythonimport coliche, os
 from bn_picture import bn2pic
 
 def main(bnfile, format="gif", viewer="display", vdfile=None, 

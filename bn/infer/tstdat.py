@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 #A
 
 a = [0]*100           +    [1]*100

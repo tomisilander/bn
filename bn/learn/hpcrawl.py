@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 # hpcrawl tries to go through new high probability networks
 
 from heapq import heappop, heapify, heappush

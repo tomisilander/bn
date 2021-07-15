@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 import bnsearch
 
 def main(bdtfile, scoretype='BDeu', ess=1.0, outfile=None, cachefile=None):

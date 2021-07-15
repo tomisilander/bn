@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 import coliche, datifr, vd, disdat
 
 def pretty_dstrs(fmt, dstrs):

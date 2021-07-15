@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 """
 The idea is to cast this as a planning problem. The state is the objects
 you have and you have to find your way to goal state. 

@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 import bn.bn, data, scorefactory
 import coliche
 from bnsearch import empty_net

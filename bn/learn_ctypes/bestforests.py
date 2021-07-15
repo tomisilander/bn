@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 from bn import BN
 from score import Score
 # from sets import Set

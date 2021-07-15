@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 def clx(wcx):
     return [clq for (w,clq) in wcx]
     

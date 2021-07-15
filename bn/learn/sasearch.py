@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 import bnsearch, sigpool
 import math, random, time as tim, greedysearch, operator
 from constraints import Constraints

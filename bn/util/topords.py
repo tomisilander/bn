@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 from bn.bn import load
 
 def main(bnfile):

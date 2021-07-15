@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 from data import Data
 from constraints import Constraints
 import random

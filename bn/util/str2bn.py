@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 import coliche, bn.bn
 
 def main(strfile, bnfile):

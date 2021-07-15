@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 import sys, operator, bnsearch
 
 def greedysearch(bn, scr, iters, cstr=None):

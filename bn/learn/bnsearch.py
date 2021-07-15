@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 from data import Data
 from bn.bn import BN
 import scorefactory
@@ -229,7 +228,7 @@ def empty_net(bdtfile, scoretype=None, params=None, cachefile=None):
     data  = Data(bdtfile)
     bn = BN(data.nof_vars())
     if scoretype != None:
-        sc = scorefactory.getscorer(data,scoretype, params, cachefile=cachefile)
+        sc = scorefactory.getscorer(data, scoretype, params, cachefile=cachefile)
         sc.score_new(bn)
         return (bn, sc)
     else:

@@ -1,5 +1,4 @@
-#!/usr/bin/python
-import vd, bnmodel, coliche
+#!/usr/bin/env pythonimport vd, bnmodel, coliche
 
 def main(vdfile, mdlfile, bnfile):
     fmt = vd.load(vdfile)

@@ -1,5 +1,4 @@
-#!/usr/bin/python
-comb = []
+#!/usr/bin/env pythoncomb = []
 def calc_combs(n):
 	for k in xrange(n+1):
 		comb.append([1])

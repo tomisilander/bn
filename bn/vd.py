@@ -1,5 +1,5 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
+import re
 
 def varnames(filename):
     return tuple([l.split("\t")[0] for l in file(filename)])
@@ -15,6 +15,18 @@ def valcser(filename):
     vcs = tuple(valcs(filename))
     return lambda vars: (isinstance(vars, int)) and vcs[vars] or map(vcs.__getitem__, vars)
 
+def get_ranges(valnames):
+    rng_re = re.compile('\s*[\[|\]]\s*([\d.]+)\s+..\s*([\d.]+)\s*\]\s*')
+
+    def get_range(vn):
+        vn_match = rng_re.match(vn)
+        vn_is_range = not vn_match is None 
+        if vn_is_range:
+            return float(vn_match.group(2)) - float(vn_match.group(1))
+        else:
+            return 1.0
+
+    return [list(map(get_range, vns_i)) for vns_i in valnames]
 
 def vd(varnames, valnames):
 
@@ -30,6 +42,7 @@ def vd(varnames, valnames):
     f.varnames = varnames
     f.values   = valnames
     f.vcs      = vcs
+    f.ranges   = get_ranges(valnames)
 
     return f
 

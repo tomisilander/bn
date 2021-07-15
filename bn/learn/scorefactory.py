@@ -10,7 +10,7 @@ def getscorer(bdt, scoretype, param,
 
     if isinstance(bdt, types.StringTypes):
         bdt = data.Data(bdt)
-
+ 
     if scoretype == 'BDeu':
         return bdeuscore.BDeuScore(bdt, param, 
                                    do_cache, do_storage, cachefile)

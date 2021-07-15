@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 # Check that all forsts have same score
 
 if __name__ == '__main__':

@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 from bn import BN
 from data import Data
 from score import Score

@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 class Orient:
 
     def __init__(self, nof_vars, fix, free):

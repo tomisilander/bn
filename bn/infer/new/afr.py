@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 class actor():
 
     def __init__(valcs, bns, tht):

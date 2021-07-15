@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 import sys, os, tempfile, itertools, shutil
 
 def rows2cols(linetbls, osep, tfn):

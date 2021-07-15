@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 import elo
 
 def in_any(clq0, clqs):

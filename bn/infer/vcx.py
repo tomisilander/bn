@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 def first(p, xs):
     for i,x in enumerate(xs):
         if p(x): return i, x

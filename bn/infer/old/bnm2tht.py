@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 import vd, bnmodel, coliche, sdt, utils
 
 def get_thetas(bnm):
