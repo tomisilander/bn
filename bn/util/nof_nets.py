@@ -1,4 +1,6 @@
-#!/usr/bin/env pythoncomb = []
+#!/usr/bin/env python
+
+comb = []
 def calc_combs(n):
 	for k in xrange(n+1):
 		comb.append([1])
@@ -20,6 +22,6 @@ import sys, math, coliche
 def main(n):
     calc_combs(n)
     nof = b(n)
-    print nof, math.log(nof)
+    print(nof, math.log(nof))
 
 coliche.che(main,"n (int)")
