@@ -1,13 +1,18 @@
 #!/usr/bin/env python
-import math, operator
-from itertools import imap, product
-import disdat, bn.vd, bn.bn
+import math
+import operator
+from itertools import product, chain
+from functools import reduce
+import disdat
+import bn.vd
+import bn.bn
 
 def normalize(xs):
+    xs = list(xs)
     s = sum(xs)
     if s == 0:
         xs = [1]*len(xs)
-    return map((1.0/s).__mul__, xs)
+    return tuple(map((1.0/s).__mul__, xs))
 
 def cnml(frq):
     if frq:
@@ -20,7 +25,7 @@ class BnModel:
     def __init__(self, bn, valcs=None, use_density=False):
         self.bn = bn
         self.valcs = valcs
-        self.use_density = use_density and valcs != None
+        self.use_density = use_density and valcs is not None
 
     def save(self, varnames, fn):
 
@@ -31,36 +36,36 @@ class BnModel:
             lenthti = len(self.thti(i))
             sparse = lenthti < 0.8*pcc
             
-            print >>f, '#@SPARSE@' if sparse else '#@DENSE@'
+            print('#@SPARSE@' if sparse else '#@DENSE@', file=f)
 
-            print >>f, '\t'.join([varnames[i]]
-                                 + map(varnames.__getitem__, 
-                                       sorted(self.bn.parents(i))))
+            parent_names = (varnames[p] for p in sorted(self.bn.parents(i)))
+            print('\t'.join(chain((varnames[i],),parent_names)), file=f)
 
             if sparse:
-                print >>f, lenthti
-                for pcfg,dst in self.thti(i).iteritems():
-                    print >>f, '\t'.join(map(str,pcfg)),'\t'.join(map(str,dst)) 
+                print(lenthti, file=f)
+                for pcfg,dst in self.thti(i).items():
+                    print('\t'.join(map(str,pcfg)),'\t'.join(map(str,dst)), file=f)
             else:
                 for pcfg in self.pcfgs(i):
-                    print >>f, '\t'.join(map(str, self.theta(i,pcfg)))
+                    print('\t'.join(map(str, self.theta(i,pcfg))), file=f)
 
-            print >>f
+            print(file=f)
         f.close()
 
 
     def set_unifs(self):
-	self.unif = [normalize([1]*vc) for vc in self.valcounts]
+        self.unif = [normalize([1]*vc) for vc in self.valcounts]
 	
     def init_param_learning(self, nof_vals, ltype, ess=None):
         self.valcounts = [n for n in nof_vals]
         self.ss = [{} for vci in self.valcounts]
         self.thetas    = None
         self.type      = ltype
-	self.set_unifs()
+        self.set_unifs()
 
         
-        if self.type == "ml": ess = 0.0
+        if self.type == "ml": 
+            ess = 0.0
         if self.type in ("bdeu", "dir", "ml", "bds", "bdq"):
             self.esss = [ess]*self.bn.varc
             if self.type == "bdeu":
@@ -69,22 +74,26 @@ class BnModel:
                     self.esss[i] /= pcc*vci
 
     def add_d_to_ss(self,d):
-        for i in xrange(self.bn.varc):
+        for i in range(self.bn.varc):
             self.add_di_to_ss(d,i)
 
     def del_d_from_ss(self,d):
-        for i in xrange(self.bn.varc):
+        for i in range(self.bn.varc):
             self.del_di_from_ss(d,i)
 
     def add_di_to_ss(self,d,i,vci=None,pi=None):
-        if vci == None: vci = self.valcounts[i]
-        if pi ==  None: pi  = list(sorted(self.bn.parents(i)))
+        if vci is None: 
+            vci = self.valcounts[i]
+        if pi is  None: 
+            pi  = list(sorted(self.bn.parents(i)))
 
         di = d[i]
-        if di == -1 : return
+        if di == -1 : 
+            return
 
         pcfg = tuple(map(d.__getitem__, pi)) # maybe ()
-        if -1 in pcfg: return
+        if -1 in pcfg: 
+            return
 
         ssi = self.ss[i]
         if pcfg not in ssi :
@@ -94,14 +103,18 @@ class BnModel:
 
 
     def del_di_from_ss(self,d,i,vci=None,pi=None):
-        if vci == None: vci = self.valcounts[i]
-        if pi ==  None: pi  = list(sorted(self.bn.parents(i)))
+        if vci is None: 
+            vci = self.valcounts[i]
+        if pi is None: 
+            pi  = list(sorted(self.bn.parents(i)))
 
         di = d[i]
-        if di == -1 : return
+        if di == -1 : 
+            return
 
         pcfg = tuple(map(d.__getitem__, pi)) # maybe ()
-        if -1 in pcfg: return
+        if -1 in pcfg: 
+            return
 
         ssi = self.ss[i]
         ssi[pcfg][di] -= 1
@@ -113,7 +126,7 @@ class BnModel:
         pi = list(self.bn.parents(i))
         pi.sort()
 
-        for d in imap(list, dt.dats()):
+        for d in map(list, dt.dats()):
             self.add_di_to_ss(d,i,vci,pi)
 
         if self.type == "bds": # empirical prior of BDs
@@ -123,7 +136,7 @@ class BnModel:
         # you have to call init_params_learning first
         for i in self.bn.vars():
             self.add_dti_to_ss(i,dt)
-            
+
         if calc_thetas:
             self.cache_thetas()
 
@@ -134,16 +147,16 @@ class BnModel:
         else:
             ssi = self.ss[i]
             if self.type in ("bdeu", "dir", "ml", "bds", "bdq"): 
-                return dict([(pcfg, normalize(map(self.esss[i].__add__, freqs)))
-                             for pcfg, freqs in ssi.iteritems()])
+                return {pcfg : normalize(map(self.esss[i].__add__, freqs))
+                             for pcfg, freqs in ssi.items()}
             elif self.type == "cnml":
-                return dict([(pcfg, normalize(map(cnml, freqs)))
-                             for pcfg, freqs in ssi.iteritems()])
+                return {pcfg : normalize(map(cnml, freqs))
+                             for pcfg, freqs in ssi.items()}
             else:
                 raise "iiks"
 
     def cache_thetas(self):
-        self.thetas = map(self.thti, self.bn.vars())
+        self.thetas = tuple(map(self.thti, self.bn.vars()))
 
     def theta(self, i, pcfg):
         return self.thti(i).get(pcfg, self.unif[i])
@@ -162,13 +175,13 @@ class BnModel:
 
     def logprob_d(self, d):
         dl = list(d)
-        return sum([self.logprob_di(i, dl) for i in self.bn.vars()])
+        return sum(self.logprob_di(i, dl) for i in self.bn.vars())
 
     def logprob_D(self, dt):
-        return sum(imap(self.logprob_d, dt.dats()))
+        return sum(map(self.logprob_d, dt.dats()))
 
     def cfgs(self, vrs):
-        vrsvls = (xrange(self.valcounts[vr]) for vr in  vrs)
+        vrsvls = (range(self.valcounts[vr]) for vr in  vrs)
         return product(*vrsvls)
 
     def pcfgs(self, i):
@@ -176,7 +189,7 @@ class BnModel:
          
     def nof_pcfgs(self, i):
         vcsps = (self.valcounts[vr] for vr in  self.bn.parents(i))
-        return reduce(operator.mul, vcsps, 1L)
+        return reduce(operator.mul, vcsps, 1)
         
     
 def load(fn, valcs):
@@ -187,34 +200,37 @@ def load(fn, valcs):
     sparse = False
     
     f = open(fn)
-    l = f.readline()
-    while len(l)>0:
-        if l.startswith('#') or len(l.strip()) == 0:
-            if l.strip().upper() == '#@SPARSE@' : sparse=True
-            if l.strip().upper() == '#@DENSE@'  : sparse=False
+    line = f.readline()
+    while len(line)>0:
+        if line.startswith('#') or len(line.strip()) == 0:
+            if line.strip().upper() == '#@SPARSE@' : 
+                sparse=True
+            if line.strip().upper() == '#@DENSE@'  : 
+                sparse=False
 
-            l = f.readline()
+            line = f.readline()
             continue
 
-        vars = l.strip().split('\t')
-        varis = map(valcs.varnames.index, vars)
+        vars = line.strip().split('\t')
+        varis = list(map(valcs.varnames.index, vars))
         i = varis.pop(0)
-        for p in varis: self.bn.addarc((p,i))
+        for p in varis: 
+            self.bn.addarc((p,i))
         if sparse:
             nof_ps = len(varis)
             pcc = int(f.readline().strip())
             pdict = {}
-            for j in xrange(pcc):
+            for j in range(pcc):
                 fields = f.readline().split()
                 pcfg = tuple(map(int,fields[:nof_ps]))
                 dst  = map(float,fields[nof_ps:])
-                pdict[pcfg]=dst
+                pdict[pcfg] = tuple(dst)
             thetas[i] = pdict
         else:
-            thetas[i] = dict((pcfg,map(float,f.readline().split()))
-                             for pcfg in self.pcfgs(i))
+            thetas[i] = {pcfg : tuple(map(float, f.readline().split()))
+                        for pcfg in self.pcfgs(i)} 
 
-        l = f.readline()
+        line = f.readline()
 
     self.thetas = thetas
     f.close()
@@ -224,19 +240,26 @@ def bnt(bnm): # strangely needed for inout
     return bnm.bn
 
 # maybe learning should be put to another file
-def main(vdfile, bnfile, datfile, outfile, ess=1.0, type="bdeu"):
-    valcs = bn.vd.load(vdfile)
-    bns = bn.bn.load(bnfile, do_pic=False)
-    dat = disdat.RowData(vdfile, datfile)
+def main(args):
+    valcs = bn.vd.load(args.vdfile)
+    bns = bn.bn.load(args.bnfile, do_pic=False)
+    dat = disdat.RowData(args.vdfile, args.datfile)
     bnm = BnModel(bns, valcs)
-    bnm.init_param_learning(valcs.vcs, type.lower(), ess)
+    bnm.init_param_learning(valcs.vcs, args.type.lower(), args.ess)
     bnm.learn_params(dat)
-    bnm.save(valcs.varnames,outfile)
+    bnm.save(valcs.varnames, args.outfile)
 
 if __name__ == '__main__':
-    from coliche import che
-    che(main,
-        ''' vdfile; bnfile; datfile; outfile
-        -t --type type bdeu|cnml|dir|ml|bds|bdq : bdeu, bds, bdq, ml, cnml or dir: default bdeu
-        -e --ess ess (float) : a parameter if needed: default 1.0
-        ''')
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('vdfile', help='VD file')
+    parser.add_argument('bnfile', help='BN file')
+    parser.add_argument('datfile', help='Data file')
+    parser.add_argument('outfile', help='Output file')
+    parser.add_argument('-t', '--type', default='bdeu', choices=['bdeu', 'cnml', 'dir', 'ml', 'bds', 'bdq'], help='Type of model (default: bdeu)')
+    parser.add_argument('-e', '--ess', type=float, default=1.0, help='Evidence strength (default: 1.0)')
+
+    args = parser.parse_args()
+
+    main(args)

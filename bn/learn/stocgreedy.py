@@ -1,16 +1,14 @@
 #!/usr/bin/env python
-from data import Data
-from constraints import Constraints
 import random
-import bnsearch
-import coliche
 import sigpool
-#import cycheck
+
 from bn import bn as bnmodule
-import data
-import scorefactory
-import bestforests
-import greedysearch
+from bn.learn.constraints import Constraints
+import bn.learn.bnsearch as bnsearch
+import bn.learn.scorefactory as scorefactory
+import bn.learn.bestforests as bestforests
+import bn.learn.greedysearch as greedysearch
+#import cycheck
 
 
 def wheelselect(lst):
@@ -19,37 +17,39 @@ def wheelselect(lst):
     s = 0
     for i, scr in enumerate(scores):
         s += scr
-        if s > w: break
+        if s > w: 
+            break
     return i, scores[i], items[i]
 
 
 
-def main(bdtfile, scoretype='BDeu',
-         ess=1.0, time=None, iters=None,
-         outfile=None, constraint_file="", startbn=None, cachefile=None):
+# def main(bdtfile, scoretype='BDeu',
+#          ess=1.0, time=None, iters=None,
+#          outfile=None, constraint_file="", startbn=None, cachefile=None):
 
+def main(args):
     sigpool.watch('SIGUSR2')
     sigpool.watch('SIGUSR1')
 
-    if time:
-        sigpool.wait_n_raise(sigpool.str2time(time), 'SIGUSR2')
+    if args.time:
+        sigpool.wait_n_raise(sigpool.str2time(args.time), 'SIGUSR2')
 
-    cstrs = Constraints(constraint_file)
+    cstrs = Constraints(args.constraint_file)
 
-    if startbn != None:
-        bn = bnmodule.load(startbn,do_pic=False)
-        sc = scorefactory.getscorer(bdtfile,scoretype,ess,
-                                    cachefile=cachefile)
+    if args.startbn is not None:
+        bn = bnmodule.load(args.startbn,do_pic=False)
+        sc = scorefactory.getscorer(args.bdtfile, args.score_type, args.ess,
+                                    cachefile=args.cachefile)
         forests_left = False
     else:
-        bn, sc = bnsearch.empty_net(bdtfile, scoretype, ess, 
-                                    cachefile=cachefile)
+        bn, sc = bnsearch.empty_net(args.bdtfile, args.score_type, args.ess, 
+                                    cachefile=args.cachefile)
         bestforests.kruskal(bn,sc,cstrs)
         fry = bestforests.Forest(bn)
         forests_left = True
         bn = fry.next()
     
-    if constraint_file: # should check if compatible with start
+    if args.constraint_file: # should check if compatible with start
         for a in cstrs.must:
             bn.addarc(a)
 
@@ -58,7 +58,7 @@ def main(bdtfile, scoretype='BDeu',
     
     good_nets = [(sc.score(),bn.copy())]
     
-    t = 0L
+    t = 0
     while True:
 
         greedysearch.greedysearch(bn, sc, 1000, cstrs)
@@ -92,10 +92,10 @@ def main(bdtfile, scoretype='BDeu',
             sas = bnsearch.score_arcs(bn,sc)
             sas.reverse()
             eas = list(enumerate(sas))
-            for x in xrange(len(sas) / 2) :
+            for x in range(len(sas) // 2) :
                 i, n, sa = wheelselect(eas)
                 ii, (s,a) = eas.pop(i)
-                if not a in cstrs.must:
+                if a not in cstrs.must:
                     #print 'DEL', a
                     bn.delarc(a)
                     #print 'ADEL', bn.arcs()
@@ -103,27 +103,25 @@ def main(bdtfile, scoretype='BDeu',
 
         sc.score_new(bn)
 
-        if (iters and t > iters): break
-        if 'SIGUSR2' in sigpool.flags: break
+        if (args.iters and t > args.iters): 
+            break
+        if 'SIGUSR2' in sigpool.flags: 
+            break
         if 'SIGUSR1' in sigpool.flags:
-            if outfile: good_nets[-1][1].save(outfile)
-            print good_nets[-1][0]
+            if args.outfile: 
+                good_nets[-1][1].save(args.outfile)
+            print (good_nets[-1][0])
             sigpool.flags.remove('SIGUSR1')
 
-    if outfile:
-        good_nets[-1][1].save(outfile)
+    if args.outfile:
+        good_nets[-1][1].save(args.outfile)
 
-    print good_nets[-1][0]
+    print (good_nets[-1][0])
 
+if __name__ == '__main__':
+    from argparse import ArgumentParser
+    from bn.learn.args import add_learning_args 
 
-coliche.che(main,
-            ''' bdtfile;
-                -g --goodness scoretype BDeu|fNML|AIC|BIC : default: BDeu
-                -e --ess ess (float) : default 1.0
-                -t time : like -t '4d 3h 5m 5[s]' (default till SIGUSR2)
-                -i --iters iters (int) :number of iterations (default infinite)
-                -c constraint_file : a file with arcs marked with + or -
-                -o outfile : file to save the model found
-                -s --start startbn : file to start search from
-                -m --cachefile cachefile: local scores
-                ''')
+    parser = ArgumentParser()
+    add_learning_args(parser, [])    
+    main(parser.parse_args())

@@ -8,6 +8,7 @@ from itertools import chain
 import array
 import os
 import sys
+import typer
 
 
 def gen_subsets(xs):
@@ -106,7 +107,7 @@ def sim(x, y, cfgextractors, parsetscores, potss):
     return sum(vrsims(x, y, cfgextractors, parsetscores, potss))
 
 
-def main(vdfile, bnmfile, ifrdir, resdir=None, cix=None, matrix=False):
+def main(vdfile: str, bnmfile: str, ifrdir:str, resdir=None, cix=None, matrix=False):
     valcs = vdload(vdfile)
     bnm = bnmload(bnmfile, valcs)
     ifr = ifrload(ifrdir)
@@ -131,9 +132,5 @@ def main(vdfile, bnmfile, ifrdir, resdir=None, cix=None, matrix=False):
             print(i1, i2, sim(d1, d2, cfgextractors, parsetscores, potss))
 
 
-if __name__ == '__main__':
-    from coliche import che
-    che(main, """vdfile; bnmfile; ifrdir
-    -r --resdir resdir: directory to get the subsetscores
-    -c --cix cix (int) : class index counting from 0 : default None
-    -m --matrix : print in matrix form""")
+if __name__ == "__main__":
+    typer.run(main)

@@ -1,5 +1,7 @@
-#!/usr/bin/env pythonimport coliche, os
-import bn.bn
+#!/usr/bin/env python3
+import sys, os
+import typer
+from typing import Optional
 
 def bn2dot(bnfile, outfile, vdfile=None, loners=False, center=None,
            awfile=None):
@@ -12,7 +14,7 @@ def bn2dot(bnfile, outfile, vdfile=None, loners=False, center=None,
     arcs = bns.arcs()
 
     names = vdfile \
-            and list(l.split("\t",1)[0] for l in file(vdfile)) \
+            and list(l.split("\t",1)[0] for l in open(vdfile)) \
             or map(str, range(varc))
 
     lonerset = range(varc)
@@ -27,7 +29,7 @@ def bn2dot(bnfile, outfile, vdfile=None, loners=False, center=None,
 
     aws = {}
     if awfile != None:
-        for l in file(awfile):
+        for l in open(awfile):
             t = l.split()
             x,y = map(int,t[0:2])
             w = float(t[2])
@@ -57,16 +59,15 @@ def bn2dot(bnfile, outfile, vdfile=None, loners=False, center=None,
     dotbuffer.append("}")
     dotstr = '\n'.join(dotbuffer)
     if outfile:
-        file(outfile,"w").write(dotstr)
+        open(outfile,"w").write(dotstr)
     else:
         return dotstr
         
 
+def main(bnfile: str, outfile: Optional[str] = None, vdfile: Optional[str] = None,
+         loners: bool = False, center: Optional[str] = None, awfile: Optional[str] = None):
+    bn2dot(bnfile, outfile, vdfile, loners, center, awfile)
+
+
 if __name__ == "__main__":
-    coliche.che(bn2dot,
-                """bnfile; outfile
-                -n --vdfile vdfile     : to add names to the picture
-                -l --loners            : show orphan nodes too
-                --mb center            : draw only markov blanket of center
-                -w --arcweights awfile : draw arcweights
-                """)
+    typer.run(main)

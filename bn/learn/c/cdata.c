@@ -90,6 +90,9 @@ int main(int argc, char* argv[])
   data* dt = data_cread(argv[1]);
   int j;
 
+  printf("Number of variables: %d\n", dt->nof_vars);
+  printf("Number of data vectors: %d\n", dt->N);
+
   for(j=0; j<dt->N; ++j) {
     int i=0;
     for(i=0; i<dt->nof_vars; ++i) {

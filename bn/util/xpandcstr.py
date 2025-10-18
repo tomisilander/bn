@@ -1,5 +1,7 @@
-#!/usr/bin/env python
-import sys, bn.vd
+#!/usr/bin/env python3
+import sys, os
+import typer
+from typing import Optional
 
 
 def names2ixs(n,names):
@@ -58,7 +60,4 @@ def main(vdfile):
 
 
 if __name__ == "__main__":
-    import coliche
-    coliche.che(main,
-                """vdfile
-                """)
+    typer.run(main)

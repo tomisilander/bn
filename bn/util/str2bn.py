@@ -1,9 +1,9 @@
-#!/usr/bin/env python
-import coliche, bn.bn
+#!/usr/bin/env python3
+import bn
+import typer
 
-def main(strfile, bnfile):
-
-    strf = file(strfile)
+def str2bn(strfile: str, bnfile: str):
+    strf = open(strfile)
     varc = int(strf.readline())
     
     arcs = []
@@ -12,5 +12,5 @@ def main(strfile, bnfile):
 
     bn.bn.BN(varc, arcs, do_pic=False).save(bnfile)
 
-if __name__ == '__main__':
-    coliche.che(main,'strfile; bnfile')
+if __name__ == "__main__":
+    typer.run(str2bn)

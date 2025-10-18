@@ -1,6 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from bn.bn import load
 from collections import defaultdict
+import sys, os
+import typer
+from typing import Optional
 
 def gen_totord(bn_org):
     bn = bn_org.copy()
@@ -17,9 +20,9 @@ def gen_totord(bn_org):
             bn.delarc((v,c), do_pic=False)
             d[bn.nof_parents(c)].append(c)
             
-def main(bnfile):
+def main(bnfile: str, opt: Optional[str] = None):
     bn = load(bnfile)
     print(" ".join(map(str, gen_totord(bn))))
 
-import coliche
-coliche.che(main,'bnfile')
+if __name__ == "__main__":
+    typer.run(main)

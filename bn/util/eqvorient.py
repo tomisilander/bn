@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 class Orient:
 
     def __init__(self, nof_vars, fix, free):
@@ -6,8 +7,8 @@ class Orient:
         self.fix  = fix.copy()
         self.free = free.copy()
         self.arcs = arcs = fix | free
-        self.dirchild  = [set() for i in xrange(nof_vars)]
-        self.dirparent = [set() for i in xrange(nof_vars)]
+        self.dirchild  = [set() for i in range(nof_vars)]
+        self.dirparent = [set() for i in range(nof_vars)]
                  
         for (a, b) in fix:
             self.dirchild[a].add(b)
@@ -63,8 +64,8 @@ class Orient:
         cdlist = [x for x in self.dirparent[b]
                   if self.isundir(a, x)]
     
-        for ci in xrange( len(cdlist) ):
-            for di in xrange( ci+1, len(cdlist) ):
+        for ci in range( len(cdlist) ):
+            for di in range( ci+1, len(cdlist) ):
                 c, d, = cdlist[ci], cdlist[di]
                 if not self.adj(c, d):
                     self.direct(a, b)

@@ -33,30 +33,30 @@ int main(int argc, char* argv[])
       int* parent_ixs = (int*) malloc(nof_parents * sizeof(int));
      
       for(pixi=0; pixi<nof_parents; ++pixi) {
-	parent_ixs[pixi] = atoi(argv[4+pixi]);
+      	parent_ixs[pixi] = atoi(argv[6+pixi]);
       }
       
       {
-	int i;
-	double pcc = nof_pcfgs(dt, nof_parents, parent_ixs);
-	for(i=0; i<count; ++i){	  
-	  if (strcmp("fNML",esss) == 0) {
-	    PEN_ML_CODE(fnml)
-	  } else if (strcmp("AIC",esss) == 0){
-	    PEN_ML_CODE(aic)
-	  } else if (strcmp("BIC",esss) == 0){
-	    PEN_ML_CODE(bic)
-	  } else {
-	    double ess = atof(esss);
-	    if (strcmp(type, "L") == 0){
-	      score = L_bde_score(dt, ess, vix, nof_parents, parent_ixs, pcc);
-	    } else if (strcmp(type, "HS") == 0) {
-	      score = HS_bde_score(dt, ess, vix, nof_parents, parent_ixs, pcc);
-	    } else {
-	      score = bde_score(dt, ess, vix, nof_parents, parent_ixs);
-	    }
-	  }
-	}
+      int i;
+      double pcc = nof_pcfgs(dt, nof_parents, parent_ixs);
+      for(i=0; i<count; ++i){	  
+        if (strcmp("fNML",esss) == 0) {
+          PEN_ML_CODE(fnml)
+        } else if (strcmp("AIC",esss) == 0){
+          PEN_ML_CODE(aic)
+        } else if (strcmp("BIC",esss) == 0){
+          PEN_ML_CODE(bic)
+        } else {
+          double ess = atof(esss);
+          if (strcmp(type, "L") == 0){
+            score = L_bde_score(dt, ess, vix, nof_parents, parent_ixs, pcc);
+          } else if (strcmp(type, "HS") == 0) {
+            score = HS_bde_score(dt, ess, vix, nof_parents, parent_ixs, pcc);
+          } else {
+            score = bde_score(dt, ess, vix, nof_parents, parent_ixs);
+          }
+        }
+      }
       }
       
       printf("%f\n", score);
@@ -65,5 +65,5 @@ int main(int argc, char* argv[])
       data_free(&dt);
 
       return 0;
-    }
+  }
 }

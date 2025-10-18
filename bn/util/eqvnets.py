@@ -1,6 +1,12 @@
-import bn.bn
-from eqvorient import Orient
+#!/usr/bin/env python3
+import os
+import sys
+from pathlib import Path  
+import typer
+import bn
+from bn.bn import load as bnload
 from bn.learn.constraints import Constraints
+from eqvorient import Orient
 
 def vstructs(bns):
     vstr = set()
@@ -54,39 +60,27 @@ def gen_eqvnets(varc,fix,free):
 
         for net in gen_eqvnets_with_arc(varc,fix,nfree,arc): yield net
         
-def eqvnets(bns):
+def g_eqvnets(bns):
     o = Orient(bns.varc, *skeleton(bns))
-    # print o.fix
-    # print o.free
-
     return gen_eqvnets(bns.varc, o.fix, o.free)
 
-from coliche import che
-import os, sys
-
-def main(bnfile, resdir=None, constraint_file=''):
+def eqvnets(bnfile:str, resdir:str, constraint_file=''):
 
     cstrs = Constraints(constraint_file)
 
-    bns=bn.bn.load(bnfile)
+    bns=bnload(bnfile)
+
     if cstrs.violated(bns.arcs()):
         sys.exit("%s violates given constraints" % bnfile)
 
-    if resdir != None:
-        if os.path.exists(resdir):
-            if not os.path.isdir:
-                sys.exit('"%s" exists but is not a directory' % resdir)
-        else:
-            os.makedirs(resdir)
-    
+    resdirpath = Path(resdir)
+    resdirpath.mkdir(parents=True, exist_ok=True) 
+       
     i=0
-    for net in eqvnets(bns):
+    for net in g_eqvnets(bns):
         if resdir != None and cstrs.satisfied(net.arcs()):
-            net.save(os.path.join(resdir,str(i)+".bn"))
+            net.save(str(resdirpath/str(i))+".bn")
             i+=1
 
-che(main,
-    """bnfile
-    -d --dir resdir : directory to store nets
-    -c constraint_file : a file with arcs marked with + or -
-""")
+if __name__ == "__main__":
+    typer.run(eqvnets)

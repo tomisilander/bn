@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-from ctypes import *
+from ctypes import CDLL, c_int, c_double
 import os
-from itertools import imap
 
-import cache
+# import bn.learn.cache as cache
 
 libcscore = CDLL(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               "cscore.so"))
@@ -15,12 +14,12 @@ cscorefuncs =  {
     'BDeu': libcscore.bde_score
     }
 
-def cparents(bn, v):
-    parentset = bn.parents(v)
+def cparents(parentset):
     nof_parents = len(parentset)
     Parents = c_int * nof_parents
     parents = Parents(*sorted(parentset))
     return nof_parents, parents
+
 
 # Use of cache should be better controlled !!!
 
@@ -31,24 +30,9 @@ class Score :
         self.scoref.restype = c_double
         self.data = data
         vars = range(data.nof_vars())
-
-        if do_cache:
-            if cachefile != None:
-                dicts = [{} for v in xrange(data.nof_vars())]
-                for l in open(cachefile):
-                    t = l.split()
-                    v,s = t[:2]
-                    dicts[int(v)][frozenset(imap(int,t[2:]))]=float(s)
-                self.cache   = [cache.Cache(dicts[v],len(dicts[v])) 
-                                for v in  vars]
-                self.cachehits = 0
-                self.cachetrys = 0
-            else:
-                self.cache   = [cache.Cache(None,100000/len(vars)) 
-                                for v in  vars]
-                self.clearcache()
-
-        if do_storage: self.clearstore()
+ 
+        if do_storage: 
+            self.clearstore()
 
         self.vscores = [None]*len(vars)
 
@@ -63,31 +47,17 @@ class Score :
     def clearstore(self):
         self.storage = []
 
-    def clearcache_v(self, v):
-        self.cache[v].clear()
-
-    def clearcache(self):
-        map(cache.Cache.clear, self.cache)
-        self.cachehits = 0
-        self.cachetrys = 0
-
-    def score(self) : return sum(self.vscores)
-
+    def score(self) : 
+        return sum(self.vscores)            
+            
     def score_new_v(self, bn, v) :
-        vps = bn.parents(v)
-        if vps in self.cache[v]:
-            vscore = self.cache[v][vps]
-            self.cachehits += 1
-        else :
-            ss_score = self.score_ss_var(bn, v)
-            vscore = self.cache[v][vps] = ss_score
-        self.cachetrys += 1
-        self.vscores[v] = vscore
+        ss_score = self.score_ss_var(bn, v)
+        self.vscores[v] = ss_score
 
         # if self.cachetrys % 10000 == 1:
         # print "Cache hit ratio:", 1.0 * self.cachehits / self.cachetrys
 
-    def score_new(self,bn):
+    def score_new(self, bn):
         for v in bn.vars():
             self.score_new_v(bn, v)
 

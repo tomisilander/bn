@@ -1,36 +1,41 @@
 #!/usr/bin/env python
-from data import Data
+from bn.learn.data import Data
 from bn.bn import BN
-import scorefactory
-from constraints import Constraints
+from bn.learn.scorefactory import getscorer
+from bn.learn.constraints import Constraints
 from random import choice
 import time
 
 #import cycheck
 
 
-def can_addarc(bn, (v1, v2)):
+def can_addarc(bn, arc):
+    (v1, v2) = arc 
     try:
         return v1 != v2 and not bn.is_ancestor_of(v1, v2, use_pic=True)
     except:
-        print v1, v2, bn.arcs()
+        print (v1, v2, bn.arcs())
         raise
 
-def can_revarc(bn, (v1, v2)):
+def can_revarc(bn, arc):
+    (v1, v2) = arc
     v2sibs = set(bn.children(v1))
     v2sibs.remove(v2)
     v2ancs = bn.ancestors(v2,use_pic=True)
     return (len(v2sibs & v2ancs) == 0)
 
 
-class NoAction(Exception): pass
+class NoAction(Exception): 
+    pass
 
 def try_add(bn, cache = None, cstrs=None, maxtries = 20):
 
-    for t in xrange(maxtries) :
+    for t in range(maxtries) :
         (v1, v2) = a = (choice(bn.vars()), choice(bn.vars()))
-        if a in bn.arcs() : continue
-        if cstrs and a in cstrs.no : continue
+        if a in bn.arcs() : 
+            continue
+        if cstrs and a in cstrs.no : 
+            continue
 
         if cache and cache[v2]: # only try new things - why ???
             v2ps = set(bn.parents(v2))
@@ -45,12 +50,14 @@ def try_add(bn, cache = None, cstrs=None, maxtries = 20):
     raise NoAction
 
 def try_del(bn, cache=None, cstrs=None, maxtries = 20):
-    if len(bn.arcs()) == 0: raise NoAction
+    if len(bn.arcs()) == 0: 
+        raise NoAction
 
-    for t in xrange(maxtries) :
+    for t in range(maxtries) :
 
         (v1, v2) = a = choice(tuple(bn.arcs()))
-        if cstrs and a in cstrs.must : continue
+        if cstrs and a in cstrs.must : 
+            continue
 
         if cache and cache[v2]: # only try new things - why ???
            v2ps = set(bn.parents(v2))
@@ -64,12 +71,14 @@ def try_del(bn, cache=None, cstrs=None, maxtries = 20):
     raise NoAction
 
 def try_rev(bn, cache = None, cstrs=None, maxtries = 20):
-    if len(bn.arcs()) == 0: raise NoAction
+    if len(bn.arcs()) == 0: 
+        raise NoAction
 
-    for t in xrange(maxtries):
+    for t in range(maxtries):
 
         (v1, v2) = a = choice(tuple(bn.arcs()))
-        if cstrs and (a in cstrs.must or (v2,v1) in cstrs.no): continue
+        if cstrs and (a in cstrs.must or (v2,v1) in cstrs.no): 
+            continue
 
         if cache and cache[v1] and cache[v2]: # why only try new things??
             v2ps = set(bn.parents(v2))
@@ -94,7 +103,9 @@ def fix_rev(bn, arc): bn.picall(set(bn.descendants(arc[1])))
 
 def cancel_add(bn, arc): bn.delarc(arc, do_pic=False)
 def cancel_del(bn, arc): bn.addarc(arc, do_pic=False)
-def cancel_rev(bn, (v1,v2)): bn.revarc((v2,v1), do_pic=False)
+def cancel_rev(bn, arc): 
+    (v1,v2) = arc
+    bn.revarc((v2,v1), do_pic=False)
 
 acts ={"tryacts": {'add' : try_add,   'del' : try_del,   'rev' : try_rev},
        "commits": {'add' : fix_add,   'del' : fix_del,   'rev' : fix_rev} ,
@@ -134,15 +145,15 @@ def stopper_f(max_iters     = None,
               max_time      = None):
 
     end_time = None
-    if max_time != None:
+    if max_time is not None:
         end_time = time.time() + max_time
 
     def stopf(search_status):
         iter_crit = max_iters     and search_status["iters"]    >=max_iters
-        acts_crit = limit_no_acts and search_ststus["t_no_acts"]>=limit_no_acts
-        impr_crit = limit_no_impr and search_ststus["t_no_impr"]>=limit_no_impr
-        acps_crit = limit_no_acps and search_ststus["t_no_acps"]>=limit_no_acps
-        time_crit = max_time != None and time.time() >= end_time
+        acts_crit = limit_no_acts and search_status["t_no_acts"]>=limit_no_acts
+        impr_crit = limit_no_impr and search_status["t_no_impr"]>=limit_no_impr
+        acps_crit = limit_no_acps and search_status["t_no_acps"]>=limit_no_acps
+        time_crit = max_time is not None and time.time() >= end_time
 
         return iter_crit or acts_crit or impr_crit or acps_crit or time_crit
 
@@ -156,7 +167,6 @@ def stepper_f(actions, better, accept, cstrs=None):
     def stepf(search_status):
         scr = search_status["scr"]
         bn =  search_status["curr_bn"]
-        curr_score =  search_status["curr_score"]
 
         #print 'stepin', bn.arcs()
         #for v in bn.vars(): print v, bn.path_in_counts[v]
@@ -166,12 +176,15 @@ def stepper_f(actions, better, accept, cstrs=None):
 
         search_status["iters"] += 1
         try:
-            aname, action = choice(acts["tryacts"].items())
+            aname, action = choice(tuple(acts["tryacts"].items()))
             changes, avars = action(bn, cstrs=cstrs)
             search_status["t_no_acts"] = 0
 
-            map(scr.storevar, avars)
-            for avar in avars: scr.score_new_v(bn, avar)
+            for avar in avars: 
+                scr.storevar(avar)
+
+            for avar in avars: 
+                scr.score_new_v(bn, avar)
 
             new_score = scr.score()
 
@@ -220,33 +233,17 @@ def initial_search_status(bn, scr):
 def localsearch(search_status, stepping, stopping):
     while True :
         stepping(search_status)
-        if stopping(search_status) : break
+        if stopping(search_status) : 
+            break
 
 # So often we also want the scorer so let us allow that
 
 def empty_net(bdtfile, scoretype=None, params=None, cachefile=None):
     data  = Data(bdtfile)
     bn = BN(data.nof_vars())
-    if scoretype != None:
-        sc = scorefactory.getscorer(data, scoretype, params, cachefile=cachefile)
+    if scoretype is not None:
+        sc = getscorer(data, scoretype, params, cachefile=cachefile)
         sc.score_new(bn)
         return (bn, sc)
     else:
         return bn
-
-
-if __name__ == '__main__':
-    import coliche
-    import data, scorefactory
-
-    def main(bdtfile, scoretype='BDeu', ess=1.0, cachefile=None):
-        bn,scr = empty_net(bdtfile,scoretype,ess,cachefile=cachefile) 
-        print scr.score(), bn.arcs()
-
-    coliche.che(main, 
-                '''bdtfile
-                -g --goodness scoretype BDeu|fNML|AIC|BIC : default: BDeu
-                -e --ess ess (float) : default 1.0
-                -m --cachefile cachefile: local scores
-                ''')
-

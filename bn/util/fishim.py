@@ -1,5 +1,7 @@
-#!/usr/bin/env python
-import sys
+#!/usr/bin/env python3
+import sys, os
+import typer
+from typing import Optional
 import bn.model.bnmodel
 import bn.vd
 import bn.infer.ifr
@@ -74,7 +76,7 @@ def sim(x, y, pprobs, cfgextractors, bnm):
                product(zip(xs, xprobs), zip(ys, yprobs)))
 
 
-def main(vdfile, bnmfile, ifrdir, matrix=False):
+def main(vdfile, bnmfile, ifrdir, matrix: bool = False):
     valcs = bn.vd.load(vdfile)
     bnm = bn.model.bnmodel.load(bnmfile, valcs)
     ifr = bn.infer.ifr.load(ifrdir)
@@ -95,7 +97,5 @@ def main(vdfile, bnmfile, ifrdir, matrix=False):
             print(i1, i2, sim(d1, d2, pfs, cfgxs, bnm))
 
 
-if __name__ == '__main__':
-    from coliche import che
-    che(main, """vdfile; bnmfile; ifrdir
-    -m --matrix : print in matrix form""")
+if __name__ == "__main__":
+    typer.run(main)

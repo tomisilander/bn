@@ -1,13 +1,17 @@
-#!/usr/bin/env python
-from bn.bn import load
+#!/usr/bin/env python3
 
-def main(bnfile):
+from itertools import product
+from bn.bn import load
+import typer
+
+def get_stages(bnfile:str):
     bn=load(bnfile)
     stages=[]
     varsleft=set(bn.vars())
     while len(varsleft)>0:
-        sources=set(v for v in varsleft if len(bn.parents(v))==0)
-        stages.append(sources)
+        sources = set(v for v in varsleft if len(bn.parents(v))==0)
+        stages.append(sorted(sources))
+
         varsleft -= sources
         for v in sources:
             for c in bn.children(v):
@@ -15,18 +19,15 @@ def main(bnfile):
     
     return stages
 
-def fac(n):
-    r=1
-    for x in xrange(1,n+1):
-        r*=x
-    return r
+def gen_topords(bnfile:str):
+    stages = get_stages(bnfile)
+    for ord in product(*[sorted(s) for s in stages]):
+        yield ord
 
-import coliche
-stages = coliche.che(main,'bnfile')
-print 'THIS DOES NOT WORK'
-print stages
-if stages != None:
-    res = 1
-    for s in stages: res *= fac(len(s))
-    print res
+def topords(bnfile:str):
+    for ord in gen_topords(bnfile):
+        print(" ".join(map(str, ord)))
+
+if __name__ == "__main__":
+    typer.run(topords)
 

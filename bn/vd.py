@@ -1,15 +1,16 @@
 #!/usr/bin/env python
+
 import re
 
 def varnames(filename):
-    return tuple([l.split("\t")[0] for l in file(filename)])
+    return tuple([line.split("\t")[0] for line in open(filename)])
 
 def fn2valcs(filename):
-    return tuple([l.count("\t") for l in file(filename)])
+    return tuple([line.count("\t") for line in open(filename)])
 
 def valcs(filename):
-    for l in file(filename):
-        yield l.count("\t")
+    for line in open(filename):
+        yield line.count("\t")
 
 def valcser(filename):
     vcs = tuple(valcs(filename))
@@ -20,7 +21,7 @@ def get_ranges(valnames):
 
     def get_range(vn):
         vn_match = rng_re.match(vn)
-        vn_is_range = not vn_match is None 
+        vn_is_range = vn_match is not None 
         if vn_is_range:
             return float(vn_match.group(2)) - float(vn_match.group(1))
         else:
@@ -48,12 +49,12 @@ def vd(varnames, valnames):
 
 
 def load(vdfile):
-    vns, vls = zip(*[l.strip().split("\t",1) for l in file(vdfile)])
+    vns, vls = zip(*[line.strip().split("\t",1) for line in open(vdfile)])
     vls = tuple([tuple(vs.split("\t")) for vs in vls])
     return vd(vns, vls)
     
 def save(f, vdfile):
-    vdf = file(vdfile,"w")
+    vdf = open(vdfile,"w")
     for vn, vls in zip(f.varnames, f.values):
-        print >>vdf, "\t".join((vn, "\t".join(vls)))
+        print("\t".join((vn, "\t".join(vls))), file=vdf)
     vdf.close()

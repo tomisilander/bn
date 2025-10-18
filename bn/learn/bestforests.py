@@ -1,8 +1,11 @@
 #!/usr/bin/env python
-from bn.bn import BN
-from  UnionFind import UnionFind
 import operator
-from itertools import *
+from functools import reduce
+
+from bn.bn import BN
+from bn.learn.UnionFind import UnionFind
+from bn.learn.bnsearch import empty_net
+from bn.learn.constraints import Constraints
 
 # For decomposable scores one can use undirected MST algorithms
 # like Kruskal
@@ -13,12 +16,13 @@ def kruskal(bn, scr, cstrs) :
     ordarcs = []
     for v2 in bn.vars():
         sv2 = scr.score_ss_var(bn, v2)
-        for v1 in xrange(v2+1,bn.varc) :
+        for v1 in range(v2+1,bn.varc) :
             arc = (v1,v2)
             if arc not in cstrs.no:
                 bn.addarc(arc, False)
                 sarc = scr.score_ss_var(bn, v2) - sv2
-                if sarc > 0: ordarcs.append((sarc,arc))
+                if sarc > 0: 
+                    ordarcs.append((sarc,arc))
                 bn.delarc(arc, False)
     ordarcs.sort()
     ordarcs.reverse()
@@ -88,7 +92,8 @@ class Forest:
 
     # how about going in order that minimizes changes to previous
     def next(self): # next() is the heart of any iterator
-        if self.i == self.nof_forests: raise StopIteration
+        if self.i == self.nof_forests: 
+            raise StopIteration
         nbn = self.ith_forest(self.i)
         self.i += 1
         return nbn
@@ -121,7 +126,8 @@ class Polyforest:
     # http://icodesnip.com/snippet/python/gray-code-generatoriterator
 
     def next(self): # next() is the heart of any iterator
-        if self.i == self.nof_forests: raise StopIteration
+        if self.i == self.nof_forests: 
+            raise StopIteration
         nbn = self.ith_forest(self.i)
         self.i += 1
         return nbn
@@ -130,25 +136,25 @@ class Polyforest:
         return self
 
 
-if __name__ == '__main__':
-    import coliche
-    import bnsearch
-    import constraints
-    def main(bdtfile, scoretype='BDeu', ess = 1.0, 
-             outfile=None, constraint_file="", cachefile=None):
-        bn,sc = bnsearch.empty_net(bdtfile, scoretype, ess, cachefile=cachefile)
-        cstrs = constraints.Constraints(constraint_file)
-        kruskal(bn,sc, cstrs)
-        if outfile:
-            bn.save(outfile)
-        sc.score_new(bn)
-        print sc.score()
+    
+def main(args):
+    bn,sc = empty_net(args.bdtfile, args.goodness, args.ess, args.cachefile)
+    cstrs = Constraints(args.constraint_file)
+    kruskal(bn,sc, cstrs)
+    if args.outfile:
+        bn.save(args.outfile)
+    sc.score_new(bn)
+    print(sc.score())
 
-    coliche.che(main,
-                ''' bdtfile;
-                -g --goodness scoretype BDeu|fNML|AIC|BIC : default: BDeu
-                -e --ess ess (float) : default 1.0
-                -c constraint_file : a file with arcs marked with (+) or -
-                -o outfile : file to save the model found
-                -m --cachefile cachefile: local scores
-                ''')
+if __name__ == '__main__':                
+    from argparse import ArgumentParser, FileType
+
+    parser = ArgumentParser(description="Find best forest for a given dataset.")
+    parser.add_argument("bdtfile", help="The dataset file.", type=str)
+    parser.add_argument("--goodness", default="BDeu", choices=["BDeu", "fNML", "AIC", "BIC"])
+    parser.add_argument("-e", "--ess", type=float, default=1.0),
+    parser.add_argument("-c", "--constraint_file", type=str)
+    parser.add_argument("-o", "--outfile", type=str)
+    parser.add_argument("-m", "--cachefile", type=str, help="precomputed scores")
+ 
+    main(parser.parse_args())

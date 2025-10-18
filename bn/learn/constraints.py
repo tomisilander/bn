@@ -6,18 +6,19 @@ class Constraints:
             self.must = set()
             self.no   = set()
 
-            if fn != "":
+            if fn:
                   self.load(fn)
 
       def load(self, fn):
-            for l in open(fn):
-                  x,a,b = l.split()
+
+            for line in open(fn):
+                  x,a,b = line.split()
                   if x == "+":
                         s = self.must
                   elif x == "-":
                         s = self.no
                   else :
-                        print >>sys.stderr, "+/- expected, found %s." % x
+                        assert False, f"+/- expected, found {x}."
                   s.add((int(a),int(b)))
 
       def save(self, fn):

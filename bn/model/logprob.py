@@ -1,39 +1,60 @@
 #!/usr/bin/env python
 
-import coliche, disdat, bn.model.bnmodel, bn.vd, math
+import math
+
+import disdat
+import bn.model.bnmodel
+import bn.vd
 
 def gen_logprobs(bnm, tstdat, base=None):
-    if base != None:
+    if base is not None:
         lbase = math.log(base)
 
     for d in tstdat.dats():
         lp = bnm.logprob_d(d)
-        if base: lp /= lbase
+        if base: 
+            lp /= lbase
         yield lp
 
 def logprob(bnm, tstdat, base=None):
     lp = bnm.logprob_D(tstdat)
-    if base: lp /= math.log(base)
+    if base: 
+        lp /= math.log(base)
     return lp
 
-def main(modelfile, vdfile, tstfile, 
-         density=False, base=None, avg=False, verbose=False):
-    valcs = bn.vd.load(vdfile)
-    bnm = bn.model.bnmodel.load(modelfile, valcs)
-    if density:
+def main(args):
+    # modelfile, vdfile, tstfile, 
+    # density=False, base=None, avg=False, verbose=False):
+    valcs = bn.vd.load(args.vdfile)
+    bnm = bn.model.bnmodel.load(args.modelfile, valcs)
+    if args.density:
         bnm.use_density = True
-    tstdat = disdat.RowData(vdfile, tstfile)
-    if verbose:
-        for lp in gen_logprobs(bnm,tstdat,base):
-            print lp
+    tstdat = disdat.RowData(args.vdfile, args.tstfile)
+    if args.verbose:
+        for lp in gen_logprobs(bnm,tstdat, args.base):
+            print(lp)
     else:
-        lp =  logprob(bnm, tstdat, base)
-        print avg and lp/tstdat.N() or lp
+        lp =  logprob(bnm, tstdat, args.base)
+        print(lp/tstdat.N() if args.avg else lp)
+
+def parse_args():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('modelfile', help='The model file to use.')
+    parser.add_argument('vdfile', help='The value distribution file to use.')
+    parser.add_argument('tstfile', help='The test data file to use.')
+    parser.add_argument('-d', '--density', action='store_true',
+                        help='Use ranges in vdfile to give density')
+    parser.add_argument('-b', '--base', type=float, default=None,
+                        help='Log base (default natural)')
+    parser.add_argument('-a', '--avg', action='store_true',
+                        help='Give average instead of sum')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='List individual logprobs')
+    return parser.parse_args()
+
 
 if __name__ == '__main__':
-    coliche.che(main,
-                '''modelfile; vdfile; tstfile
-                -d --density : use ranges in vdfile to give density
-                -b --base base (float) : log base (default natural)
-                -a --avg : give average instead of sum
-                -v --verbose: list individual logprobs''')
+    args = parse_args()
+    main(args)
+    

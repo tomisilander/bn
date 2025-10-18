@@ -1,9 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+import sys, os
+import typer
+from typing import Optional
+
 import bn
-import coliche
 
-def main(bnfile, strfile):
-
+def main(bnfile: str, strfile: str, opt: Optional[str] = None):
     bns = bn.load(bnfile)
     strf = file(strfile,"w")
 
@@ -14,5 +16,5 @@ def main(bnfile, strfile):
         print >>strf, len(bns.children(v)), len(ps), " ".join(map(str,ps))
     strf.close()
 
-if __name__ == '__main__':
-    coliche.che(main,'bnfile; strfile')
+if __name__ == "__main__":
+    typer.run(main)

@@ -1,30 +1,32 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from array import array
-from itertools import izip
-import coliche, disdat
+from bn import disdat
+import typer
 
-def tdt2bdt(vdfile, tdtfile, bdtfile, v=False):
+def tdt2bdt(vdfile, tdtfile, bdtf, verbose=False):
     
     cdt = disdat.ColData(vdfile, tdtfile)
-
-    bdtf = file(bdtfile,"w")
-
-    di1 = cdt.vars()
-    length = len(di1[0])
-    array("I",[length]).tofile(bdtf)
-    
-    di2 = cdt.vars()
-    for i,vci in enumerate(cdt.nof_vals()):
-        if v: print ".",
+    # print('v', cdt.vars())
+    #for vdat in cdt.vars():
+    #    print (vdat)
+        
+    array("I",[cdt.N()]).tofile(bdtf)
+    for vci, di in zip(cdt.nof_vals(), cdt.vars()):
+        if verbose: 
+            print('.', end='')
         array("B",[vci]).tofile(bdtf)
-        array("b",di2[i]).tofile(bdtf)
+        array("b",list(di)).tofile(bdtf)
 
-    bdtf.close()
-
-    if v: print ""
+    if verbose: 
+        print()
     
-if __name__ == '__main__' :
-    coliche.che(tdt2bdt,
-                """
-                vdfile; tdtfile; bdtfile
-                -v (bool): verbose""")
+def main(
+    vdfile: str = typer.Argument(..., help='VD file'),
+    tdtfile: str = typer.Argument(..., help='TDT file'),
+    bdtfile: str = typer.Argument(..., help='BDT file'),
+    verbose: bool = typer.Option(False, "-v", "--verbose", help='Verbose mode')
+):
+    tdt2bdt(vdfile, tdtfile, bdtfile, verbose)
+
+if __name__ == "__main__":
+    typer.run(main)
