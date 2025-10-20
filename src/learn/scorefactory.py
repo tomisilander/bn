@@ -1,7 +1,7 @@
-from bn.learn.score import cscorefuncs
-from bn.learn.bdeuscore import BDeuScore
-from bn.learn.pen_ml_score import PenMLScore
-from bn.learn.data import Data              
+from src.learn.score import cscorefuncs
+from src.learn.bdeuscore import BDeuScore
+from src.learn.pen_ml_score import PenMLScore
+from src.learn.data import Data              
 
 def getscorer(bdt, scoretype, param, 
               do_cache=True, do_storage=True, cachefile=None):
@@ -17,8 +17,8 @@ def getscorer(bdt, scoretype, param,
         return PenMLScore(bdt,cscorefuncs[scoretype],
                           do_cache, do_storage, cachefile)
     else:
-        print('Unknown scoretype', scoretype)
-
+        raise ValueError('Unknown score type: '+scoretype)
+    
 if __name__ == '__main__':
     from argparse import ArgumentParser
     from bn.bn import load as load_bn, BN

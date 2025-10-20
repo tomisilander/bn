@@ -2,10 +2,10 @@
 import operator
 from functools import reduce
 
-from bn.bn import BN
-from bn.learn.UnionFind import UnionFind
-from bn.learn.bnsearch import empty_net
-from bn.learn.constraints import Constraints
+from src.bn import BN
+from src.learn.UnionFind import UnionFind
+from src.learn.bnsearch import empty_net
+from src.learn.constraints import Constraints
 
 # For decomposable scores one can use undirected MST algorithms
 # like Kruskal

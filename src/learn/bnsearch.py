@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-from bn.learn.data import Data
-from bn.bn import BN
-from bn.learn.scorefactory import getscorer
-from bn.learn.constraints import Constraints
+from src.learn.data import Data
+from src.bn import BN
+from src.learn.scorefactory import getscorer
+from src.learn.constraints import Constraints
 from random import choice
 import time
 

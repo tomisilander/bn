@@ -3,12 +3,12 @@
 
 from itertools import combinations, product
 from heapq import heappushpop, heappush
-from bn.learn.bnsearch import can_addarc
-from bn.learn.constraints import Constraints
-from bn.learn.scorefactory import getscorer
-from bn.learn.score import Score
-from bn.bn import BN, load as load_bn
-from bn.learn.data import Data
+from src.learn.bnsearch import can_addarc
+from src.learn.constraints import Constraints
+from src.learn.scorefactory import getscorer
+from src.learn.score import Score
+from src.bn import BN, load as load_bn
+from src.learn.data import Data
 
 
 def tryseq(bn0:BN ,sc:Score, opseq):

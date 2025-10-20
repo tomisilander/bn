@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import typer
-from bn_picture import bn2pic
+from .bn_picture import bn2pic
 app = typer.Typer()
 
 @app.command()

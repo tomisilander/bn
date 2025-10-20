@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from data import Data
-from bn.bn import BN
+from src.bn import BN
 from score import Score
 from heapq import *
 import itertools
