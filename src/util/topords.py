@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+import typer
 
 from itertools import product
-from bn.bn import load
-import typer
+from src.bn import load
+
+app = typer.Typer()
 
 def get_stages(bnfile:str):
     bn=load(bnfile)
@@ -28,6 +30,10 @@ def topords(bnfile:str):
     for ord in gen_topords(bnfile):
         print(" ".join(map(str, ord)))
 
+@app.command("topords")
+def main(bnfile: str = typer.Argument(..., help="The Bayesian network file.")):
+    topords(bnfile)
+
 if __name__ == "__main__":
-    typer.run(topords)
+    app()
 

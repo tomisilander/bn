@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-
-import sys, os, tempfile, shutil
+import sys
+import os
+import tempfile
+import shutil
 import typer
-from typing import Optional
+
+app = typer.Typer()
 
 def rows2cols(linetbls, osep, tfn):
     # write transposed columns to tfn (Python 3)
@@ -47,28 +50,31 @@ def paste(filenames, outfilename, sep, workdir):
 
     if outfilename == '-':
         with open(filenames[0], "r", newline=None) as src:
-            for l in src:
-                sys.stdout.write(l)
+            for line in src:
+                sys.stdout.write(line)
     else:
         shutil.move(filenames[0], outfilename)
 
-def transpose(ifn: str, ofn: str, delim: Optional[str] = None, buffersize: int = 1000000):
+@app.command("transpose")
+def transpose(inputfile: str, outputfile: str, delim: str|None = None, buffersize: int = 1000000):
 
     # SPLIT ROWS TO SMALLER PIECES AND TRANSPOSE THEM TO TEMP FILES
 
     workdir = tempfile.mkdtemp()
 
-    if delim == "\\t": delim = "\t"
+    if delim == "\\t": 
+        delim = "\t"
     odelim = ' ' if delim is None else delim
 
-    f = open(ifn, "r", newline=None)
+    f = open(inputfile, "r", newline=None)
     try:
         i = 0
         colfns = []
         while True:
             ls = f.readlines(buffersize)
-            if not ls: break
-            linetbls = [l.rstrip("\n").split(delim) for l in ls]
+            if not ls: 
+                break
+            linetbls = [line.rstrip("\n").split(delim) for line in ls]
             colfns.append(os.path.join(workdir, "cols_%.8d" % i))
             rows2cols(linetbls, odelim, colfns[-1])
             i += 1
@@ -77,11 +83,11 @@ def transpose(ifn: str, ofn: str, delim: Optional[str] = None, buffersize: int =
 
     # PASTE PIECES
 
-    paste(colfns, ofn, odelim, workdir)
+    paste(colfns, outputfile, odelim, workdir)
 
     # CLEAN IT
 
     shutil.rmtree(workdir)
 
 if __name__ == "__main__":
-    typer.run(transpose)
+    app()

@@ -6,7 +6,7 @@ class Orient:
         
         self.fix  = fix.copy()
         self.free = free.copy()
-        self.arcs = arcs = fix | free
+        self.arcs = fix | free
         self.dirchild  = [set() for i in range(nof_vars)]
         self.dirparent = [set() for i in range(nof_vars)]
                  
@@ -21,15 +21,17 @@ class Orient:
         while cont:
             cont = 0
             for (b, c) in self.free.copy():
-                if   self.R1(b, c): cont = 1
-                elif self.R1(c, b): cont = 1
-                elif self.R2(b, c): cont = 1
-                elif self.R2(c, b): cont = 1
-                elif self.R3(b, c): cont = 1
-                elif self.R3(c, b): cont = 1
-                elif self.R4(b, c): cont = 1
-                elif self.R4(c, b): cont = 1
-
+                if any(fn(a, b) for (fn, a, b) in [
+                    (self.R1, b, c),
+                    (self.R1, c, b),
+                    (self.R2, b, c),
+                    (self.R2, c, b),
+                    (self.R3, b, c),
+                    (self.R3, c, b),
+                    (self.R4, b, c),
+                    (self.R4, c, b),
+                ]):
+                    cont = 1
 
     def direct(self, a, b):
         if (a,b) in self.free:

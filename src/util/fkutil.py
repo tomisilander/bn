@@ -1,14 +1,16 @@
-from bn.infer.pot import Potential
-from bn.vd import load as vdload
-from bn.model.bnmodel import load as bnmload
-from bn.infer.ifr import load as ifrload
-from bn.util.fishim import lognorm
+from src.infer.pot import Potential
+from src.vd import load as vdload
+from src.model.bnmodel import load as bnmload
+from src.infer.ifr import load as ifrload
+from src.util.fishim import lognorm
 from itertools import combinations_with_replacement
 from itertools import chain
 import array
 import os
 import sys
 import typer
+
+app = typer.Typer()
 
 
 def gen_subsets(xs):
@@ -57,6 +59,7 @@ def gen_subpots(valcs, bnm, ifr, varix):
             subpot_p = (cpot >> Potential(parents, valcs, 0.0)).normalize()
             subpot_f = (cpot >> Potential(family, valcs, 0.0)).normalize()
         else:
+            assert isinstance(pots[nof_subpars+1], Potential)
             subpot_p = pots[nof_subpars+1] >> Potential(parsubset, valcs, 0.0)
             subpot_f = pots[nof_subpars+1] >> Potential(famsubset, valcs, 0.0)
         yield (subpot_f, subpot_p)
@@ -107,6 +110,7 @@ def sim(x, y, cfgextractors, parsetscores, potss):
     return sum(vrsims(x, y, cfgextractors, parsetscores, potss))
 
 
+@app.command()
 def main(vdfile: str, bnmfile: str, ifrdir:str, resdir=None, cix=None, matrix=False):
     valcs = vdload(vdfile)
     bnm = bnmload(bnmfile, valcs)
@@ -133,4 +137,4 @@ def main(vdfile: str, bnmfile: str, ifrdir:str, resdir=None, cix=None, matrix=Fa
 
 
 if __name__ == "__main__":
-    typer.run(main)
+    app()

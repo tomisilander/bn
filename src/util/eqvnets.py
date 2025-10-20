@@ -1,12 +1,34 @@
 #!/usr/bin/env python3
-import os
 import sys
 from pathlib import Path  
 import typer
-import bn
-from bn.bn import load as bnload
-from bn.learn.constraints import Constraints
-from eqvorient import Orient
+
+from src.bn import BN, load as bnload
+from src.learn.constraints import Constraints
+from src.util.eqvorient import Orient
+
+app = typer.Typer()
+
+
+
+@app.command()
+def main(bnfile:str, resdir:str, constraint_file=''):
+
+    cstrs = Constraints(constraint_file)
+
+    bns:BN = bnload(bnfile)
+
+    if cstrs.violated(bns.arcs()):
+        sys.exit("%s violates given constraints" % bnfile)
+
+    resdirpath = Path(resdir)
+    resdirpath.mkdir(parents=True, exist_ok=True) 
+       
+    i=0
+    for net in g_eqvnets(bns):
+        if cstrs.satisfied(net.arcs()):
+            net.save(str(resdirpath/str(i))+".bn")
+            i+=1
 
 def vstructs(bns):
     vstr = set()
@@ -31,8 +53,10 @@ def skeleton(bns):
         a2 = (p2,v)
         fix.add(a1)
         fix.add(a2)
-        if a1 in free: free.remove(a1)
-        if a2 in free: free.remove(a2)
+        if a1 in free: 
+            free.remove(a1)
+        if a2 in free: 
+            free.remove(a2)
 
     return (fix, free)
 
@@ -43,44 +67,26 @@ def gen_eqvnets_with_arc(varc,fix,free,arc):
     # print "fixing", arc
     o = Orient(varc,fix,free)
     # print 'ao', o.fix, o.free
-    for net in gen_eqvnets(varc,o.fix,o.free): yield net
+    yield from  gen_eqvnets(varc,o.fix,o.free)
     
 def gen_eqvnets(varc,fix,free):
     if len(free) == 0: 
         # print 'ready', fix
-        yield bn.bn.BN(varc,fix, do_pic = False)
+        yield BN(varc,fix, do_pic = False)
     else:
         nfree = free.copy()
         arc = nfree.pop()
         # print 'fix', fix, nfree, arc
-        for net in gen_eqvnets_with_arc(varc,fix,nfree,arc): yield net
+        yield from gen_eqvnets_with_arc(varc,fix,nfree,arc)
 
         arc=(arc[1],arc[0])
         # print 'then', fix, nfree, arc
 
-        for net in gen_eqvnets_with_arc(varc,fix,nfree,arc): yield net
+        yield from gen_eqvnets_with_arc(varc,fix,nfree,arc)
         
 def g_eqvnets(bns):
     o = Orient(bns.varc, *skeleton(bns))
     return gen_eqvnets(bns.varc, o.fix, o.free)
 
-def eqvnets(bnfile:str, resdir:str, constraint_file=''):
-
-    cstrs = Constraints(constraint_file)
-
-    bns=bnload(bnfile)
-
-    if cstrs.violated(bns.arcs()):
-        sys.exit("%s violates given constraints" % bnfile)
-
-    resdirpath = Path(resdir)
-    resdirpath.mkdir(parents=True, exist_ok=True) 
-       
-    i=0
-    for net in g_eqvnets(bns):
-        if resdir != None and cstrs.satisfied(net.arcs()):
-            net.save(str(resdirpath/str(i))+".bn")
-            i+=1
-
 if __name__ == "__main__":
-    typer.run(eqvnets)
+    app()

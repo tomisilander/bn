@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-from bn.bn import load
+from src.bn import load
 from collections import defaultdict
-import sys, os
 import typer
-from typing import Optional
+
+app = typer.Typer()
 
 def gen_totord(bn_org):
     bn = bn_org.copy()
@@ -20,9 +20,10 @@ def gen_totord(bn_org):
             bn.delarc((v,c), do_pic=False)
             d[bn.nof_parents(c)].append(c)
             
-def main(bnfile: str, opt: Optional[str] = None):
+@app.command()
+def totord(bnfile: str):
     bn = load(bnfile)
     print(" ".join(map(str, gen_totord(bn))))
 
 if __name__ == "__main__":
-    typer.run(main)
+    app()

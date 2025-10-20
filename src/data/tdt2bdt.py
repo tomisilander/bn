@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-from array import array
-from bn import disdat
 import typer
+from array import array
+
+from . import disdat
+
+app = typer.Typer()
 
 def tdt2bdt(vdfile, tdtfile, bdtf, verbose=False):
     
     cdt = disdat.ColData(vdfile, tdtfile)
-    # print('v', cdt.vars())
-    #for vdat in cdt.vars():
-    #    print (vdat)
         
     array("I",[cdt.N()]).tofile(bdtf)
     for vci, di in zip(cdt.nof_vals(), cdt.vars()):
@@ -19,7 +19,8 @@ def tdt2bdt(vdfile, tdtfile, bdtf, verbose=False):
 
     if verbose: 
         print()
-    
+
+@app.command("tdt2bdt")
 def main(
     vdfile: str = typer.Argument(..., help='VD file'),
     tdtfile: str = typer.Argument(..., help='TDT file'),
@@ -29,4 +30,4 @@ def main(
     tdt2bdt(vdfile, tdtfile, bdtfile, verbose)
 
 if __name__ == "__main__":
-    typer.run(main)
+    app()

@@ -29,32 +29,48 @@ def get_ranges(valnames):
 
     return [list(map(get_range, vns_i)) for vns_i in valnames]
 
-def vd(varnames, valnames):
+class VariableDescriptors():
+    def __init__(self, varnames, valnames):
+        self.varnames = varnames
+        self.values   = valnames
+        self.vcs      = tuple(map(len, valnames))
+        self.ranges   = get_ranges(valnames)
 
-    vcs = tuple(map(len, valnames))
-
-    def f(vars):
+    def __call__(self, vars):
         if isinstance(vars, int):
-            return vcs[vars]
+            return self.vcs[vars]
         else:
-            return map(vcs.__getitem__, vars)
+            return map(self.vcs.__getitem__, vars)
 
-    f.nof_vars = len(varnames)
-    f.varnames = varnames
-    f.values   = valnames
-    f.vcs      = vcs
-    f.ranges   = get_ranges(valnames)
-
-    return f
+    def nof_vars(self):
+        return len(self.varnames)   
+    
+# def vd(varnames, valnames):
+# 
+#     vcs = tuple(map(len, valnames))
+# 
+#     def f(vars):
+#         if isinstance(vars, int):
+#             return vcs[vars]
+#         else:
+#             return map(vcs.__getitem__, vars)
+# 
+#     f.nof_vars = len(varnames)
+#     f.varnames = varnames
+#     f.values   = valnames
+#     f.vcs      = vcs
+#     f.ranges   = get_ranges(valnames)
+# 
+#     return f
 
 
 def load(vdfile):
     vns, vls = zip(*[line.strip().split("\t",1) for line in open(vdfile)])
     vls = tuple([tuple(vs.split("\t")) for vs in vls])
-    return vd(vns, vls)
+    return VariableDescriptors(vns, vls)
     
-def save(f, vdfile):
+def save(valdes:VariableDescriptors, vdfile:str):
     vdf = open(vdfile,"w")
-    for vn, vls in zip(f.varnames, f.values):
+    for vn, vls in zip(valdes.varnames, valdes.values):
         print("\t".join((vn, "\t".join(vls))), file=vdf)
     vdf.close()

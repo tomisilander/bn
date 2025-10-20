@@ -1,23 +1,26 @@
 #!/usr/bin/env python3
 
-from bn.bn import load as load_bn
-from bn.learn.constraints import Constraints
+"""Forbid all the arcs that are not in skeleton of the given BN."""
 
-import coliche
+from src.bn import load as load_bn
+from src.learn.constraints import Constraints
+
 from itertools import combinations
 import typer
-from typing import Optional
+
+app = typer.Typer()
 
 def gen_forbidden_arcs(bn):
 
     sarcs = frozenset(tuple(arc) for arc in map(sorted, bn.arcs()))
 
     for arc in combinations(bn.vars(), 2):
-        if not arc in sarcs: 
+        if arc not in sarcs: 
             yield arc
             yield tuple(reversed(arc))
 
-def main(bnfile, cstrfile, opt: Optional[str] = None):
+@app.command()
+def skelstraints(bnfile, cstrfile):
     bn = load_bn(bnfile)
     cstrs = Constraints()
     for arc in gen_forbidden_arcs(bn):
@@ -25,4 +28,4 @@ def main(bnfile, cstrfile, opt: Optional[str] = None):
     cstrs.save(cstrfile)
 
 if __name__ == "__main__":
-    typer.run(main)
+    app()

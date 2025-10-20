@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-import bn
 import typer
+from src.bn import load as load_bn
 from eqvnets import skeleton
+app = typer.Typer()
+
+@app.command()
+def test_eqv(bnfile1: str, bnfile2: str):
+    is_eqv(bnfile1, bnfile2)
 
 def is_eqv(bnfile1:str, bnfile2:str):
-    bns1 = bn.bn.load(bnfile1)
-    bns2 = bn.bn.load(bnfile2)
+    bns1 = load_bn(bnfile1)
+    bns2 = load_bn(bnfile2)
     fix1, free1 = skeleton(bns1)
     fix2, free2 = skeleton(bns2)
 
@@ -15,4 +20,4 @@ def is_eqv(bnfile1:str, bnfile2:str):
     return
 
 if __name__ == "__main__":
-    typer.run(is_eqv)
+    app()
