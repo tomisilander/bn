@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
+from typing import Set, List
 
 class Orient:
 
-    def __init__(self, nof_vars, fix, free):
+    def __init__(self, nof_vars, fix:Set, free:Set):
         
-        self.fix  = fix.copy()
-        self.free = free.copy()
+        self.fix:Set  = fix.copy()
+        self.free:Set = free.copy()
         self.arcs = fix | free
-        self.dirchild  = [set() for i in range(nof_vars)]
-        self.dirparent = [set() for i in range(nof_vars)]
+        self.dirchild:List[Set]  = [set() for _i in range(nof_vars)]
+        self.dirparent:List[Set] = [set() for _i in range(nof_vars)]
                  
         for (a, b) in fix:
             self.dirchild[a].add(b)
