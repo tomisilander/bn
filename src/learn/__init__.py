@@ -1,5 +1,5 @@
 """
-A typer module for data-related commands.
+A typer module for structure learning related commands.
 """
 
 import typer
