@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import operator
-import bn.learn.bnsearch as bnsearch
+import src.learn.bnsearch as bnsearch
 
 def greedysearch(bn, scr, iters, cstr=None):
     gr_better = operator.__gt__
@@ -16,6 +16,6 @@ def greedysearch(bn, scr, iters, cstr=None):
     
 
 if __name__ == '__main__':
-    bn, scr = bnsearch.sys2bnscr()
+    bn, scr = bnsearch.empty_net_n_score(sys.argv[1], sys.argv[2], float(sys.argv[3]))
     greedysearch(bn,scr,int(sys.argv[4]))
     print (scr.score(), bn.arcs())

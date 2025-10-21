@@ -1,20 +1,27 @@
 #!/usr/bin/env python
 import random
+import heapq
+from typing import List
+
+import typer
+
 import sigpool
 
-from bn import bn as bnmodule
-from bn.learn.constraints import Constraints
-import bn.learn.bnsearch as bnsearch
-import bn.learn.scorefactory as scorefactory
-import bn.learn.bestforests as bestforests
-import bn.learn.greedysearch as greedysearch
+from src import bn as bnmodule
+from src.learn.constraints import Constraints
+import src.learn.bnsearch as bnsearch
+import src.learn.scorefactory as scorefactory
+import src.learn.bestforests as bestforests
+import src.learn.greedysearch as greedysearch
 #import cycheck
 
+app = typer.Typer()
 
 def wheelselect(lst):
     scores, items = zip(*lst)
     w = random.uniform(0.0, sum(scores))
     s = 0
+    i = 0
     for i, scr in enumerate(scores):
         s += scr
         if s > w: 
@@ -23,41 +30,52 @@ def wheelselect(lst):
 
 
 
-# def main(bdtfile, scoretype='BDeu',
-#          ess=1.0, time=None, iters=None,
-#          outfile=None, constraint_file="", startbn=None, cachefile=None):
-
-def main(args):
+@app.command("stocgreedy")
+def main(bdtfile: str,
+         score_type: str = 'BDeu',
+         ess: float = 1.0,
+         time: str|None = None,
+         iters: int|None = None,
+         outfile: str|None = None,
+         constraint_file: str = "",
+         startbn: str|None = None,
+         cachefile: str|None = None):
+ 
+    # set up signal handling for termination
     sigpool.watch('SIGUSR2')
     sigpool.watch('SIGUSR1')
 
-    if args.time:
-        sigpool.wait_n_raise(sigpool.str2time(args.time), 'SIGUSR2')
+    if time:
+        sigpool.wait_n_raise(sigpool.str2time(time), 'SIGUSR2')
 
-    cstrs = Constraints(args.constraint_file)
+    cstrs = Constraints(constraint_file)
 
-    if args.startbn is not None:
-        bn = bnmodule.load(args.startbn,do_pic=False)
-        sc = scorefactory.getscorer(args.bdtfile, args.score_type, args.ess,
-                                    cachefile=args.cachefile)
+    # set up initial bn and scorer
+    
+    if startbn is not None:
+        bn = bnmodule.load(startbn,do_pic=False)
+        sc = scorefactory.getscorer(bdtfile, score_type, ess,
+                                    cachefile=cachefile)
         forests_left = False
-    else:
-        bn, sc = bnsearch.empty_net(args.bdtfile, args.score_type, args.ess, 
-                                    cachefile=args.cachefile)
+        fry = None
+    else: # start from forests
+        bn, sc = bnsearch.empty_net_n_score(bdtfile, score_type, ess, 
+                                            cachefile=cachefile)
         bestforests.kruskal(bn,sc,cstrs)
         fry = bestforests.Forest(bn)
         forests_left = True
         bn = fry.next()
     
-    if args.constraint_file: # should check if compatible with start
+    if constraint_file: # should check if compatible with start
         for a in cstrs.must:
             bn.addarc(a)
 
     sc.score_new(bn)
     bn.picall()
     
-    good_nets = [(sc.score(),bn.copy())]
     
+    # start doing stochastic greedy search
+    good_nets:List = [(sc.score(),bn.copy())]
     t = 0
     while True:
 
@@ -66,16 +84,23 @@ def main(args):
 
         t += 1
 
-        if gs > good_nets[0][0] and bn not in [gn for (sn,gn) in good_nets]:
-            good_nets.append((gs,bn.copy()))
-            good_nets.sort()
-            if len(good_nets) > 2 * 10 :
-                good_nets = good_nets[10:]
-            
-        start_from_forest = random.choice((0,1)) # stupid if out of forests
+        # store good nets found so far
+        MAX_KEEP = 10
 
+        # add worthy candidate if not already present
+        already_in_goods = any(gn == bn for (_, gn) in good_nets)
+        worth_adding = gs >= good_nets[0][0]
+        if worth_adding and not already_in_goods:
+            if len(good_nets) >= MAX_KEEP:
+                good_nets.pop(0) # remove worst
+            good_nets.append((gs, bn.copy()))
+            good_nets.sort(key=lambda score_n_bn: score_n_bn[0]) # best last
+           
+        # prepare for next iteration       
+        start_from_forest = random.choice((0,1)) # stupid if out of forests
         if forests_left and start_from_forest: 
             try:
+                assert fry is not None
                 bn = fry.next()
                 bn.picall()
             except StopIteration:
@@ -84,8 +109,6 @@ def main(args):
         if (not start_from_forest) or (not forests_left):
               
             bn = random.choice(good_nets)[1].copy()
-
-            # bn = good_nets[0][1].copy()
             
             sc.score_new(bn)
 
@@ -103,25 +126,24 @@ def main(args):
 
         sc.score_new(bn)
 
-        if (args.iters and t > args.iters): 
+        # check for termination
+        
+        if (iters and t > iters): 
             break
         if 'SIGUSR2' in sigpool.flags: 
             break
         if 'SIGUSR1' in sigpool.flags:
-            if args.outfile: 
-                good_nets[-1][1].save(args.outfile)
+            if outfile: 
+                good_nets[-1][1].save(outfile)
             print (good_nets[-1][0])
             sigpool.flags.remove('SIGUSR1')
 
-    if args.outfile:
-        good_nets[-1][1].save(args.outfile)
+    # save best net found
+    if outfile:
+        good_nets[-1][1].save(outfile)
 
+    # print score of best net found 
     print (good_nets[-1][0])
 
 if __name__ == '__main__':
-    from argparse import ArgumentParser
-    from bn.learn.args import add_learning_args 
-
-    parser = ArgumentParser()
-    add_learning_args(parser, [])    
-    main(parser.parse_args())
+    app()

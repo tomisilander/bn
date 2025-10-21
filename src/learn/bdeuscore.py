@@ -2,7 +2,7 @@
 from ctypes import c_double, c_void_p, c_int, POINTER
 from functools import lru_cache
 
-import bn.learn.score as score
+import src.learn.score as score
 
 class BDeuScore(score.Score):
     def __init__(self, data, ess, 

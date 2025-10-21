@@ -153,7 +153,7 @@ def stopper_f(max_iters     = None,
         acts_crit = limit_no_acts and search_status["t_no_acts"]>=limit_no_acts
         impr_crit = limit_no_impr and search_status["t_no_impr"]>=limit_no_impr
         acps_crit = limit_no_acps and search_status["t_no_acps"]>=limit_no_acps
-        time_crit = max_time is not None and time.time() >= end_time
+        time_crit = end_time is not None and time.time() >= end_time
 
         return iter_crit or acts_crit or impr_crit or acps_crit or time_crit
 
@@ -176,7 +176,7 @@ def stepper_f(actions, better, accept, cstrs=None):
 
         search_status["iters"] += 1
         try:
-            aname, action = choice(tuple(acts["tryacts"].items()))
+            aname, action = choice(tuple(actions["tryacts"].items()))
             changes, avars = action(bn, cstrs=cstrs)
             search_status["t_no_acts"] = 0
 
@@ -198,11 +198,11 @@ def stepper_f(actions, better, accept, cstrs=None):
             if accept(new_score, search_status):
                 search_status["curr_score"] = new_score
                 scr.clearstore()
-                acts["commits"][aname](bn, changes)
+                actions["commits"][aname](bn, changes)
                 search_status["t_no_acps"] = 0
             else :
                 search_status["t_no_acps"] += 1
-                acts["cancels"][aname](bn,changes)
+                actions["cancels"][aname](bn,changes)
                 scr.restore()
 
         except NoAction :
@@ -238,12 +238,14 @@ def localsearch(search_status, stepping, stopping):
 
 # So often we also want the scorer so let us allow that
 
-def empty_net(bdtfile, scoretype=None, params=None, cachefile=None):
+def empty_net(bdtfile):
+    data  = Data(bdtfile)
+    return BN(data.nof_vars())
+
+def empty_net_n_score(bdtfile, scoretype, params, cachefile=None):
     data  = Data(bdtfile)
     bn = BN(data.nof_vars())
-    if scoretype is not None:
-        sc = getscorer(data, scoretype, params, cachefile=cachefile)
-        sc.score_new(bn)
-        return (bn, sc)
-    else:
-        return bn
+    sc = getscorer(data, scoretype, params, cachefile=cachefile)
+    sc.score_new(bn)
+    return (bn, sc)
+

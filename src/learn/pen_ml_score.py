@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import bn.learn.score as score
+import src.learn.score as score
 from ctypes import c_double, c_int, c_void_p, POINTER
 from functools import lru_cache
 
