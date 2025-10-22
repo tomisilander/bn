@@ -38,12 +38,12 @@ if __name__ == '__main__':
                 else arcweights(bns,sc, arcs)
 
         names = [l.split("\t",1)[0] for l in file(vdfile)] if vdfile \
-                else map(str, range(bns.varc))
+                else list(map(str, list(range(bns.varc))))
         
         for ((f,t),s) in warcs:
             if probratio: s = exp(s)
 
-            print names[f], names[t], s
+            print(names[f], names[t], s)
             
     import coliche
     coliche.che(main,

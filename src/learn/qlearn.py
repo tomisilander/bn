@@ -51,8 +51,8 @@ def qlearn(data, ess, max_heap_size, min_heap_size, max_iters):
         if not hq: break
         
         pri, qe = heappop(hq)
-        net, taboo, score, nof_arcs = map(qe.__getitem__,
-                                          'net taboo score nof_arcs'.split())
+        net, taboo, score, nof_arcs = list(map(qe.__getitem__,
+                                          'net taboo score nof_arcs'.split()))
 
         to_be_inserted = []
 
@@ -113,10 +113,10 @@ def qlearn(data, ess, max_heap_size, min_heap_size, max_iters):
             heappush(hq, (pri, qe_tbi))
 
         if max_heap_size > 0 and len(hq) > max_heap_size :
-            print "truncating hq"
+            print("truncating hq")
             hq = hq[:min_heap_size+1]
             
-    print t, best_score, best_net.arcs()
+    print(t, best_score, best_net.arcs())
 
 def main(bdtfile, ess=1.0,
          max_heap_size = 5000, min_heap_size = 4000,

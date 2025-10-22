@@ -8,7 +8,7 @@ def main(bnfile, bdtfile, scoretype='BDeu', ess=1.0, cachefile=None):
     bdt = data.Data(bdtfile)
     sc = scorefactory.getscorer(bdt,scoretype,ess,cachefile=cachefile)
     sc.score_new(bns)
-    print sc.score()
+    print(sc.score())
 
 if __name__ == '__main__':
     

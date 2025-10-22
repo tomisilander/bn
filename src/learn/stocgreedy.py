@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 import random
-import heapq
 from typing import List
 
 import typer
 
-import sigpool
-
 from src import bn as bnmodule
+from src.learn import sigpool
 from src.learn.constraints import Constraints
 import src.learn.bnsearch as bnsearch
 import src.learn.scorefactory as scorefactory

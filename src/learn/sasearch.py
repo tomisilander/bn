@@ -77,7 +77,7 @@ if __name__ == '__main__':
         if outfile:
             isss["best_bn"].save(outfile)
 
-        print isss["best_score"]
+        print(isss["best_score"])
 
     coliche.che(main,
                 ''' bdtfile;

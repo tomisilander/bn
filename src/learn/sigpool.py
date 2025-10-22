@@ -1,5 +1,6 @@
-#!/usr/bin/env python
-import os, signal, re
+import os
+import signal
+import re
 
 # This is the pool flagging the signals
 
@@ -47,7 +48,7 @@ def str2time(s):
     re_dhms = re.compile("([dhms])")
 
     t = 0
-    t_lst = filter(lambda x:x, re_dhms.split(s.replace(" ","")))
+    t_lst = list(filter(lambda x:x, re_dhms.split(s.replace(" ",""))))
 
     conv = {'d':24*3600, 'h':3600, 'm':60, 's':1}
 

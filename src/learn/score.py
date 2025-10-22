@@ -29,7 +29,7 @@ class Score :
 
         self.scoref.restype = c_double
         self.data = data
-        vars = range(data.nof_vars())
+        vars = list(range(data.nof_vars()))
  
         if do_storage: 
             self.clearstore()

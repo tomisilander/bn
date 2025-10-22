@@ -11,7 +11,7 @@ import os
 def depx(v1,v2,cols,vc):
 
     # Collect counts
-    c12 = [[0]*vc[v2] for x in xrange(vc[v1])]
+    c12 = [[0]*vc[v2] for x in range(vc[v1])]
     c1  =  [0]*vc[v1]
     c2  =  [0]*vc[v2]
     n   = 0
@@ -25,12 +25,12 @@ def depx(v1,v2,cols,vc):
     # Calculate DEP
     res  = 0.0
 
-    for x in xrange(vc[v1]):
+    for x in range(vc[v1]):
         px = c1[x]/n
-        for y in xrange(vc[v2]):
+        for y in range(vc[v2]):
             py   = c2[y]/n
             pxy = c12[x][y]/n
-            print x,y, pxy
+            print(x,y, pxy)
             if pxy > 0:
                 res += pxy * math.log(pxy / px / py)
     return res
@@ -42,8 +42,8 @@ def CL1(data):
 
     tdep = []
 
-    for v1 in xrange(data.varcount()):
-        for v2 in xrange(v1):
+    for v1 in range(data.varcount()):
+        for v2 in range(v1):
             d = dep(v1,v2)
             tdep.append((d,v1,v2))
             tdep.append((d,v2,v1))
@@ -52,7 +52,7 @@ def CL1(data):
     tdep.reverse()
 #    print tdep
     
-    ns = range(data.varcount())
+    ns = list(range(data.varcount()))
     (d,x1,x2) = tdep[0]
     ts = [x1,x2]
     ns.remove(x1)
@@ -77,37 +77,37 @@ def ETC(data):
 
     def dep(v1,v2): return depx(v1,v2,cols,vc)
 
-    for x in xrange(data.varcount()):
-        print ("%.2d: " % x), " ".join(["%.5f " % dep(x,y) for y in xrange(x)])
+    for x in range(data.varcount()):
+        print(("%.2d: " % x), " ".join(["%.5f " % dep(x,y) for y in range(x)]))
             
 
     def put(tr,x):
         lst, (c,a,b,d,dep_ab), rst = tr
         dep_cx = dep(c,x)
         dep_dx = dep(d,x)
-        print "putting %d to [%d]%d=(%.5f)=%d[%d]" % (x,c,a,dep_ab,b,d)
-        print "  based on %.5f %.5f, thus" % (dep_cx, dep_dx), 
+        print("putting %d to [%d]%d=(%.5f)=%d[%d]" % (x,c,a,dep_ab,b,d))
+        print("  based on %.5f %.5f, thus" % (dep_cx, dep_dx), end=' ') 
         if dep_cx < dep_dx :
-            print "right" 
+            print("right") 
             return put_right(tr,x)
         else :
-            print "left" 
+            print("left") 
             return put_left(tr,x)
 
     def put_right(tr,x):
         lst, (c,a,b,d,dep_ab), rst = tr
         dep_ax = dep(a,x)
-        print "   dep_ax = %.5f" % dep_ax
+        print("   dep_ax = %.5f" % dep_ax)
         if dep_ab < dep_ax:
-            print "   shifting root"
+            print("   shifting root")
             new_rn = x; new_dep = dep_ax
         else:
             new_rn = b; new_dep = dep_ab
         if not rst:
-            print "   on empty"
+            print("   on empty")
             rst = (),(b,b,x,x,dep(b,x)),()
         else:
-            print "   going down"
+            print("   going down")
             rst = put(rst,x)
             
         return (lst,(c,a,new_rn,d,new_dep), rst)
@@ -115,34 +115,34 @@ def ETC(data):
     def put_left(tr,x):
         lst, (c,a,b,d,dep_ab), rst = tr
         dep_bx = dep(b,x)
-        print "   dep_bx = %.5f" % dep_bx
+        print("   dep_bx = %.5f" % dep_bx)
         if dep_ab < dep_bx:
-            print "   shifting root"
+            print("   shifting root")
             new_ln = x; new_dep = dep_bx
         else:
             new_ln = a; new_dep = dep_ab
         if not lst:
-            print "   on empty"
+            print("   on empty")
             lst =(), (x,x,a,a,dep(a,x)),()
         else:
-            print "   going down"
+            print("   going down")
             lst = put(lst,x)
             
         return (lst,(c,new_ln,b,d,new_dep), rst)
 
             
-    vars = range(2,data.varcount())
+    vars = list(range(2,data.varcount()))
     tr = ((), (0,0,1,1,dep(0,1)), ())
     trshow(tr,etr2dot)
-    print ""
+    print("")
     while vars:
         tr = put(tr, vars.pop(0))
         tr = refoc(tr)
         if not check_inv(tr,cols,vc):
             trshow(tr,etr2dot)
-            print "XXXXXXXXXXXXX ERROR XXXXXXXXXXXX"
+            print("XXXXXXXXXXXXX ERROR XXXXXXXXXXXX")
         trshow(tr,etr2dot)
-        print ""
+        print("")
             
     return tr
 
@@ -246,6 +246,6 @@ if __name__ == '__main__':
     # dotprint(tr)
     bane = tr2bn(tr,data.valcounts())
 #    bane.print_str()
-    print >>sys.stderr, Score(bane, data, 1.0).score()
-    print CL1(data).arcs()
-    print >>sys.stderr, Score(CL1(data), data, 1.0).score()
+    print(Score(bane, data, 1.0).score(), file=sys.stderr)
+    print(CL1(data).arcs())
+    print(Score(CL1(data), data, 1.0).score(), file=sys.stderr)

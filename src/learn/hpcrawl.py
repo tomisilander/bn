@@ -65,7 +65,7 @@ def main(bnfile,bdtfile,
     c=0
     for (_bnas,s) in hpcrawl([bn0],sc, cstrs=cstrs,topN=topN, 
                              dump_worklist=dump_worklist):
-        print c, s
+        print(c, s)
         # if c == 20000: 
         #     bnmodule.BN(bn0.varc,_bnas,do_pic=False).save('X%d.bn' % c)
         c+=1

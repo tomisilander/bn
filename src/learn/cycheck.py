@@ -14,6 +14,6 @@ if __name__ == '__main__':
     import coliche
     from bn.bn import load
     def main(bnfile):
-        print 'DAG' if is_dag(load(bnfile, do_pic=False)) else 'not DAG'
+        print('DAG' if is_dag(load(bnfile, do_pic=False)) else 'not DAG')
     coliche.che(main, 'bnfile')
     

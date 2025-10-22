@@ -8,7 +8,7 @@ def main(bdtfile, scoretype='BDeu', ess=1.0, outfile=None, cachefile=None):
     if outfile:
         bn.save(outfile)
 
-    print sc.score()
+    print(sc.score())
 
 if __name__ == '__main__':
 

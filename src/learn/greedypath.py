@@ -52,11 +52,11 @@ def main(bdtfile, scoretype='BDeu', ess=1.0, cachefile=None, bnfile=None,
                 'actname':'del'}
     }
 
-    print 'init', -1, -1, scr.score()
+    print('init', -1, -1, scr.score())
     params = updown[direction]
     for sdiff, arc in gsteps(bns, scr, params):
         scr.score_new(bns) # needed?
-        print params['actname'], arc[0], arc[1], scr.score()
+        print(params['actname'], arc[0], arc[1], scr.score())
 
         
 if __name__ == '__main__':

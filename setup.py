@@ -5,18 +5,13 @@ setup(name          = "bn",
       description   = "Bayesian network software",
       author        = "Tomi Silander",
       author_email  = "tomi.silander@iki.fi",
-      packages      = ["bn", "bn.learn", "bn.model", "bn_console_scripts"],
+      packages      = ["src", "src.learn", "src.model", "src.data"],
       package_data  = {"":["*.txt"],
-                       "bn.learn":["cscore.so", "cdata.so"]},
+                       "src.learn":["cscore.so", "cdata.so"]},
       long_description = """
     Could be longer.
       """,
       
-      scripts = glob("scripts/*"),
+      scripts = glob("scripts/bens"),
 
-      entry_points = {
-          'console_scripts': [
-              'bn_nofnets=bn_console_scripts.bn_nofnets:main',
-              ]
-          }
 )

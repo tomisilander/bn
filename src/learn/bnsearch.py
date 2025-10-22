@@ -14,7 +14,7 @@ def can_addarc(bn, arc):
     try:
         return v1 != v2 and not bn.is_ancestor_of(v1, v2, use_pic=True)
     except:
-        print (v1, v2, bn.arcs())
+        print((v1, v2, bn.arcs()))
         raise
 
 def can_revarc(bn, arc):

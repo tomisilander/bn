@@ -96,9 +96,9 @@ if __name__ == '__main__':
     (bns, urcs) = coliche.che(main,'bnfile')
 
     for a in bns.arcs():
-        print "%d -> %d" % a
+        print("%d -> %d" % a)
 
     for (u1,u2) in urcs:
         if u1>u2:
-            print "%d -- %d" % (u1,u2)
+            print("%d -- %d" % (u1,u2))
         
