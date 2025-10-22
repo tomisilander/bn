@@ -3,11 +3,22 @@ import math
 import operator
 from itertools import product, chain
 from functools import reduce
-import disdat
-import bn.vd
-import bn.bn
+from typing import Tuple, List, Dict
 
-def normalize(xs):
+import typer
+
+from src.data.disdat import RowData
+from src.vd import load as vdload, VariableDescriptors
+from src.bn import BN, load as bnload
+
+app = typer.Typer()
+
+type DistrT = Tuple[float,...]
+type ThetasVarT = Dict[Tuple[int,...],DistrT] # mapping from parent config to distribution
+type ThetaT    = Tuple[ThetasVarT|None, ...]
+
+
+def normalize(xs) -> DistrT:
     xs = list(xs)
     s = sum(xs)
     if s == 0:
@@ -22,10 +33,12 @@ def cnml(frq):
 
 class BnModel:
 
-    def __init__(self, bn, valcs=None, use_density=False):
+    def __init__(self, bn:BN, valdes:VariableDescriptors|None=None, use_density=False):
         self.bn = bn
-        self.valcs = valcs
-        self.use_density = use_density and valcs is not None
+        self.valdes = valdes
+        self.use_density = use_density and valdes is not None
+        self.valcounts:Tuple[int,...] = () if valdes is None else valdes.vcs
+        self.thetas:Tuple[ThetasVarT|None, ...] =(None,) * bn.varc
 
     def save(self, varnames, fn):
 
@@ -54,12 +67,11 @@ class BnModel:
 
 
     def set_unifs(self):
-        self.unif = [normalize([1]*vc) for vc in self.valcounts]
+        self.unif:Tuple[DistrT, ...] = tuple(normalize([1]*vc) for vc in self.valcounts)
 	
     def init_param_learning(self, nof_vals, ltype, ess=None):
-        self.valcounts = [n for n in nof_vals]
+        self.valcounts = tuple(n for n in nof_vals)
         self.ss = [{} for vci in self.valcounts]
-        self.thetas    = None
         self.type      = ltype
         self.set_unifs()
 
@@ -81,11 +93,9 @@ class BnModel:
         for i in range(self.bn.varc):
             self.del_di_from_ss(d,i)
 
-    def add_di_to_ss(self,d,i,vci=None,pi=None):
-        if vci is None: 
-            vci = self.valcounts[i]
-        if pi is  None: 
-            pi  = list(sorted(self.bn.parents(i)))
+    def add_di_to_ss(self,d,i,vci:int|None=None,pi=None):
+        vci = self.valcounts[i] if vci is None else vci
+        pi = list(sorted(self.bn.parents(i))) if pi is None else pi
 
         di = d[i]
         if di == -1 : 
@@ -132,7 +142,7 @@ class BnModel:
         if self.type == "bds": # empirical prior of BDs
             self.esss[i] /= len(self.ss[i])*vci
 
-    def learn_params(self, dt, calc_thetas=True):
+    def learn_params(self, dt:RowData, calc_thetas=True):
         # you have to call init_params_learning first
         for i in self.bn.vars():
             self.add_dti_to_ss(i,dt)
@@ -140,9 +150,9 @@ class BnModel:
         if calc_thetas:
             self.cache_thetas()
 
-    def thti(self, i):
+    def thti(self, i) -> ThetasVarT:
 
-        if self.thetas:
+        if self.thetas[i] is not None:
             return self.thetas[i]
         else:
             ssi = self.ss[i]
@@ -153,15 +163,19 @@ class BnModel:
                 return {pcfg : normalize(map(cnml, freqs))
                              for pcfg, freqs in ssi.items()}
             else:
-                raise "iiks"
+                raise ValueError("Unknown learning type: "+self.type)
 
     def cache_thetas(self):
         self.thetas = tuple(map(self.thti, self.bn.vars()))
 
-    def theta(self, i, pcfg):
-        return self.thti(i).get(pcfg, self.unif[i])
+    def theta(self, i, pcfg) -> DistrT:
+        dstrs_i = self.thti(i)
+        if pcfg not in dstrs_i:
+            return self.unif[i]
+        else:
+            return dstrs_i[pcfg]
 
-    def thetd(self, i, d):
+    def thetd(self, i, d) -> DistrT:
         pi = list(self.bn.parents(i))
         pi.sort()
         pcfg = tuple(map(d.__getitem__, pi))
@@ -170,14 +184,15 @@ class BnModel:
     def logprob_di(self, i, d):
         di = d[i]
         p_di = self.thetd(i,d)[di]
-        rng_di = self.valcs.ranges[i][di] if self.use_density else 1
+        assert isinstance(self.valdes, VariableDescriptors)
+        rng_di = self.valdes.ranges[i][di] if self.use_density else 1
         return math.log(p_di/rng_di)
 
     def logprob_d(self, d):
         dl = list(d)
         return sum(self.logprob_di(i, dl) for i in self.bn.vars())
 
-    def logprob_D(self, dt):
+    def logprob_D(self, dt:RowData):
         return sum(map(self.logprob_d, dt.dats()))
 
     def cfgs(self, vrs):
@@ -191,11 +206,10 @@ class BnModel:
         vcsps = (self.valcounts[vr] for vr in  self.bn.parents(i))
         return reduce(operator.mul, vcsps, 1)
         
-    
-def load(fn, valcs):
-    self = BnModel(bn.bn.BN(valcs.nof_vars), valcs)
-    self.valcounts = valcs.vcs
-    thetas = [None] * valcs.nof_vars
+def load(fn, valdes:VariableDescriptors):
+    self = BnModel(BN(valdes.nof_vars()), valdes)
+    self.valcounts = valdes.vcs
+    thetas:List[Dict|None] = [None] * valdes.nof_vars()
     self.set_unifs()
     sparse = False
     
@@ -212,7 +226,7 @@ def load(fn, valcs):
             continue
 
         vars = line.strip().split('\t')
-        varis = list(map(valcs.varnames.index, vars))
+        varis = list(map(valdes.varnames.index, vars))
         i = varis.pop(0)
         for p in varis: 
             self.bn.addarc((p,i))
@@ -231,35 +245,23 @@ def load(fn, valcs):
                         for pcfg in self.pcfgs(i)} 
 
         line = f.readline()
-
-    self.thetas = thetas
     f.close()
+
+    self.thetas = tuple(thetas)
     return self
 
-def bnt(bnm): # strangely needed for inout
+def bnt(bnm:BnModel): # strangely needed for inout
     return bnm.bn
 
-# maybe learning should be put to another file
-def main(args):
-    valcs = bn.vd.load(args.vdfile)
-    bns = bn.bn.load(args.bnfile, do_pic=False)
-    dat = disdat.RowData(args.vdfile, args.datfile)
-    bnm = BnModel(bns, valcs)
-    bnm.init_param_learning(valcs.vcs, args.type.lower(), args.ess)
+@app.command("learn")
+def main(vdfile, bnfile, datfile, outfile, type: str = 'bdeu', ess: float = 1.0):
+    valdes = vdload(vdfile)
+    bns = bnload(bnfile, do_pic=False)
+    dat = RowData(vdfile, datfile)
+    bnm = BnModel(bns, valdes)
+    bnm.init_param_learning(valdes.vcs, type.lower(), ess)
     bnm.learn_params(dat)
-    bnm.save(valcs.varnames, args.outfile)
+    bnm.save(valdes.varnames, outfile)
 
 if __name__ == '__main__':
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('vdfile', help='VD file')
-    parser.add_argument('bnfile', help='BN file')
-    parser.add_argument('datfile', help='Data file')
-    parser.add_argument('outfile', help='Output file')
-    parser.add_argument('-t', '--type', default='bdeu', choices=['bdeu', 'cnml', 'dir', 'ml', 'bds', 'bdq'], help='Type of model (default: bdeu)')
-    parser.add_argument('-e', '--ess', type=float, default=1.0, help='Evidence strength (default: 1.0)')
-
-    args = parser.parse_args()
-
-    main(args)
+    app()
